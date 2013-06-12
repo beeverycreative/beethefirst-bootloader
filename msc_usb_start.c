@@ -76,7 +76,7 @@ static const U8 abDescriptors[] = {
 // configuration descriptor
 	0x09,
 	DESC_CONFIGURATION,
-	LE_WORD(134),			// wTotalLength
+	LE_WORD(130),			// wTotalLength
 	0x01,					// bNumInterfaces
 	0x01,					// bConfigurationValue
 	0x00,					// iConfiguration
@@ -117,13 +117,13 @@ static const U8 abDescriptors[] = {
 	DESC_STRING,
 	'B', 0, 'E', 0, 'E', 0, 'V', 0, 'E', 0, 'R', 0, 'Y', 0, 'C', 0, 'R', 0, 'E', 0, 'A', 0, 'T', 0, 'I', 0, 'V', 0, 'E', 0,
 
-	54,
+	50,
 	DESC_STRING,
-	'B', 0, 'E', 0, 'E', 0, ' ', 0, 'T', 0, 'H', 0, 'E', 0, ' ', 0, 'F', 0, 'I', 0, 'R', 0, 'S', 0, 'T', 0, ' ', 0, '-', 0, ' ', 0, 'b', 0, 'o', 0, 'o', 0, 't', 0, 'l', 0, 'o', 0, 'a', 0, 'd', 0, 'e', 0, 'r', 0,
+	'B', 0, 'E', 0, 'E', 0, 'T', 0, 'H', 0, 'E', 0, 'F', 0, 'I', 0, 'R', 0, 'S', 0, 'T', 0, ' ', 0, '-', 0, ' ', 0, 'b', 0, 'o', 0, 'o', 0, 't', 0, 'l', 0, 'o', 0, 'a', 0, 'd', 0, 'e', 0, 'r', 0,
 
 	12,
 	DESC_STRING,
-	'2', 0, '.', 0, '2', 0, '.', 0, '0', 0,/* bootloader version 2.2.0 */
+	'2', 0, '.', 0, '2', 0, '.', 0, '1', 0,/* bootloader version 2.2.1 */
 
 // terminating zero
 	0
