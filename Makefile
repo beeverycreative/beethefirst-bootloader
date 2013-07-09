@@ -136,6 +136,7 @@ APPLIBDIR    = libraries
 INCLUDES = $(APPLIBDIR)/CMSISv1p30_LPC17xx/inc \
 	 $(APPLIBDIR)/LPCUSB/inc \
 	 $(APPLIBDIR)/NXP/Drivers/include \
+	 $(APPLIBDIR)/R2C2/ \
 	 $(APPLIBDIR)/FatFs/src \
 	 inc \
 
@@ -155,6 +156,9 @@ SRC =	$(APPLIBDIR)/LPCUSB/src/usbcontrol.c \
 	$(APPLIBDIR)/NXP/Drivers/source/lpc17xx_ssp.c \
 	$(APPLIBDIR)/FatFs/src/ff.c \
 	$(APPLIBDIR)/FatFs/src/fattime.c \
+	$(APPLIBDIR)/R2C2/usb.c \
+	$(APPLIBDIR)/R2C2/serial_fifo.c \
+	$(APPLIBDIR)/R2C2/serial.c \
 	main.c	\
 	blockdev_sd.c \
 	blockdev_fat.c \
@@ -164,9 +168,12 @@ SRC =	$(APPLIBDIR)/LPCUSB/src/usbcontrol.c \
 	sbl_iap.c \
 	spi.c \
 	debug.c \
-	uart.c \
-	ios.c
-
+	ios.c	\
+	gcode_process.c \
+	gcode_parse.c \
+	planner.c \
+	bootloader.c 
+	
 # List C source files here which must be compiled in ARM-Mode (no -mthumb).
 # use file-extension c for "c-only"-files
 ## just for testing, timer.c classcould be compiled in thumb-mode too

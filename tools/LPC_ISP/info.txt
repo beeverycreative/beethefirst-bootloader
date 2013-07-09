@@ -5,6 +5,8 @@ Como programar o bootloader:
 3º executar o comando para programação: ./lpc21isp -control -wipe -bin ./R2C2_USB_bootloader_v2.1.1.bin /dev/ttyUSB0 230400 12000
 4º fazer reset à R2C2, clicando no botão de Reset. Se tudo correr bem, a programação é efectuada e será visto na consola:
 
+######sudo ./tools/LPC_ISP/lpc21isp_183/lpc21isp -control -wipe -bin ./releases/BEETHEFIRST-bootloader_USB-v2.2.1.bin /dev/ttyUSB0 230400 12000
+
 lpc21isp version 1.83
 File ../../R2C2_USB_bootloader_v2.1.1.bin:
 	loaded...

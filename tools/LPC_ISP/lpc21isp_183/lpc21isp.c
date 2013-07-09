@@ -2096,7 +2096,15 @@ int PerformActions(ISP_ENVIRONMENT *IspEnvironment)
     // User asked for terminal emulation, provide a really dumb terminal.
     Terminal(IspEnvironment);
 #endif
+//queremos a linha RTS a 1 lógico
+  /*  ResetTarget(IspEnvironment, RUN_MODE);
 
+    ControlModemLines(IspEnvironment, 1, 0);
+	Sleep(100);
+	ClearSerialPortBuffers(IspEnvironment);
+	Sleep(100);
+	ControlModemLines(IspEnvironment, 0, 1);
+*/
     CloseSerialPort(IspEnvironment);  /*  All done, close the serial port to the      */
 
     return 0;
