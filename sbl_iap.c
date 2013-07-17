@@ -18,7 +18,7 @@
 #include "LPC17xx.h"
 #include "debug.h"
 #include "type.h"
-
+#include 	"serial.h"
 // If COMPUTE_BINARY_CHECKSUM is defined, then code will check that checksum
 // contained within binary image is valid.
 //#define COMPUTE_BINARY_CHECKSUM
@@ -39,71 +39,101 @@ SECTOR_18_END,SECTOR_19_END,SECTOR_20_END,SECTOR_21_END,SECTOR_22_END,          
 SECTOR_23_END,SECTOR_24_END,SECTOR_25_END,SECTOR_26_END,                         \
 SECTOR_27_END,SECTOR_28_END,SECTOR_29_END};
 
-static unsigned param_table[5];
-static unsigned result_table[5];
 
 char flash_buf[FLASH_BUF_SIZE];
 
 static unsigned byte_ctr = 0;
 
 void write_data(unsigned cclk,unsigned dst,void * flash_data_buf, unsigned count);
-void find_erase_prepare_sector(unsigned cclk, unsigned dst);
 void erase_sector(unsigned start_sector,unsigned end_sector,unsigned cclk);
 void prepare_sector(unsigned start_sector,unsigned end_sector,unsigned cclk);
 void iap_entry(unsigned param_tab[],unsigned result_tab[]);
 void compare_data(unsigned cclk, unsigned dst, void * flash_data_buf, unsigned count);
+void read_device_serial_number(void);
+
+void read_device_serial_number(void)
+{
+	  param_table[0] = READ_DEVICE_SERIAL;
+
+	  iap_entry(param_table,result_table);
+	  if(result_table[0] != CMD_SUCCESS)
+	  {
+		  serial_writestr("Error: reading serial ");
+	  }
+	  else
+	  {
+		  serwrite_uint32(result_table[1]);
+		  serial_writestr(" ");
+		  serwrite_uint32(result_table[2]);
+		  serial_writestr(" ");
+		  serwrite_uint32(result_table[3]);
+		  serial_writestr(" ");
+		  serwrite_uint32(result_table[4]);
+		  serial_writestr(" ");
+	  }
+}
+
+
 
 unsigned write_flash(unsigned * dst, char * src, unsigned no_of_bytes)
 {
+
   unsigned i;
 
-  for(i = 0;i<no_of_bytes;i++)
+  if(no_of_bytes == FLASH_BUF_SIZE)
   {
-    flash_buf[(byte_ctr+i)] = *(src+i);
-  }
-  byte_ctr = byte_ctr + no_of_bytes;
 
-  if(byte_ctr == FLASH_BUF_SIZE)
-  {
-    /* We have accumulated enough bytes to trigger a flash write */
-    find_erase_prepare_sector(SystemCoreClock/1000, (unsigned)dst);
-    if(result_table[0] != CMD_SUCCESS)
-    {
-      DBG("Error: prepare sectors\n");
-      while(1); /* No way to recover. Just let OS report a write failure */
-    }
-    write_data( SystemCoreClock/1000,
+	  for(i = 0;i<no_of_bytes;i++)
+	  {
+	    flash_buf[i] = *(src+i);
+	  }
+
+      find_prepare_sector(SystemCoreClock/1000, (unsigned)dst);
+
+      if(result_table[0] != CMD_SUCCESS)
+      {
+    	  serial_writestr("Error: preparing to write data\n");
+      }
+
+      write_data( SystemCoreClock/1000,
                 (unsigned)dst,
                 (void *)flash_buf,
                 FLASH_BUF_SIZE);
-    if(result_table[0] != CMD_SUCCESS)
-    {
-      DBG("Error: writing data\n");
-      while(1); /* No way to recover. Just let OS report a write failure */
-    }
 
-    compare_data( SystemCoreClock/1000,
+
+
+      if(result_table[0] != CMD_SUCCESS)
+      {
+    	  serial_writestr("Error: writing data\n");
+      }
+
+
+      compare_data( SystemCoreClock/1000,
                 (unsigned)dst,
                 (void *)flash_buf,
                 FLASH_BUF_SIZE);
-    if(result_table[0] != CMD_SUCCESS)
-    {
-      DBG("Error: verifying data\n");
-      while(1); /* No way to recover. Just let OS report a write failure */
-    }
 
-    /* Reset byte counter and flash address */
-    byte_ctr = 0;
-    dst = 0;
+
+      if(result_table[0] != CMD_SUCCESS)
+      {
+    	  serial_writestr("Error: verifying data\n");
+      }
+
+      /* Reset flash address */
+      dst = 0;
   }
+  else
+	  return 1;
+
   return(CMD_SUCCESS);
 }
 
-void find_erase_prepare_sector(unsigned cclk, unsigned dst)
+void find_prepare_sector(unsigned cclk, unsigned dst)
 {
   unsigned i;
 
   __disable_irq();
+
   for(i = USER_START_SECTOR; i <= MAX_USER_SECTOR; i++)
   {
     if(dst < sector_end_map[i])
@@ -111,18 +141,49 @@ void find_erase_prepare_sector(unsigned cclk, unsigned dst)
       if(dst == sector_start_map[i])
       {
         prepare_sector(i, i, cclk);
-        erase_sector(i, i, cclk);
       }
       prepare_sector(i , i, cclk);
       break;
     }
   }
+
   __enable_irq();
+  if(result_table[0] != CMD_SUCCESS)
+      {
+          serial_writestr("Error: preparing to write data\n");
+      }
+
+}
+void find_erase_sector(unsigned cclk, unsigned dst)
+{
+ unsigned k;
+
+  __disable_irq();
+
+  for(k = USER_START_SECTOR;k <= MAX_USER_SECTOR; k++)
+  {
+	if(dst < sector_end_map[k])
+	{
+	  if(dst == sector_start_map[k])
+	  {
+		erase_sector(k, k, cclk);
+	  }
+
+	  break;
+	}
+  }
+
+  __enable_irq();
+  if(result_table[0] != CMD_SUCCESS)
+  {
+      serial_writestr("Error: erasing data\n");
+  }
 }
 
 void write_data(unsigned cclk, unsigned dst, void * flash_data_buf, unsigned count)
 {
   __disable_irq();
+
   param_table[0] = COPY_RAM_TO_FLASH;
   param_table[1] = dst;
   param_table[2] = (unsigned)flash_data_buf;
@@ -130,23 +191,30 @@ void write_data(unsigned cclk, unsigned dst, void * flash_data_buf, unsigned cou
   param_table[4] = cclk;
 
   // for debug, print the address and number of bytes
-  DBG("Writting address: %d -- ", param_table[1]);
-  DBG("Nr bytes: %d\n", param_table[3]);
+ // DBG("Writting address: %d -- ", param_table[1]);
+ // DBG("Nr bytes: %d\n", param_table[3]);
 
   iap_entry(param_table,result_table);
+  //DBG("iap_entry\n");
+
   __enable_irq();
+
 }
 
 void compare_data(unsigned cclk, unsigned dst, void * flash_data_buf, unsigned count)
 {
   __disable_irq();
+
   param_table[0] = COMPARE;
   param_table[1] = dst;
   param_table[2] = (unsigned)flash_data_buf;
   param_table[3] = count;
   param_table[4] = cclk;
+
   iap_entry(param_table,result_table);
+
   __enable_irq();
+
 }
 
 void erase_sector(unsigned start_sector, unsigned end_sector, unsigned cclk)
@@ -268,6 +336,6 @@ void erase_user_flash(void)
   erase_sector(USER_START_SECTOR,MAX_USER_SECTOR,SystemCoreClock/1000);
   if(result_table[0] != CMD_SUCCESS)
   {
-    while(1); /* No way to recover. Just let OS report a write failure */
+      serial_writestr("Error: erasing data\n");
   }
 }

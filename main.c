@@ -127,8 +127,11 @@ int main() {
 	e_disable();
 	e_step();
 
-
 	USBSerial_Init();
+
+	char sector[512];
+	unsigned *pmem=(unsigned *) (SECTOR_16_START);
+	int counter = 0;
 
 	// main loop
 	 for (;;)
@@ -136,10 +139,17 @@ int main() {
 	   // process characters from the serial port
 	   while (!serial_line_buf.seen_lf && (serial_rxchars() != 0) && (serial_line_buf.len < MAX_LINE))
 	   {
+		   counter++;
 		 unsigned char c = serial_popchar();
 
 		 if (serial_line_buf.len < MAX_LINE)
 		   serial_line_buf.data [serial_line_buf.len++] = c;
+
+		 if(counter == 64)
+		 {
+			 counter = 0;
+			 serial_writestr("ok\n");
+		 }
 
 		 if (((c==10) || (c==13)) && (!transfer_mode))
 		 {
@@ -155,17 +165,36 @@ int main() {
 			 {
 				serial_line_buf.seen_lf = 1;
 			 }
+
 		 }
 	   }
 
-	   // if queue is full, we wait
-	   if (!plan_queue_full())
+	   if(!transfer_mode)
 	   {
+		   // if queue is full, we wait
+		   if (!plan_queue_full())
+		   {
+			  parse_result = gcode_parse_line (&serial_line_buf);
+			  serial_line_buf.len = 0;
+			  serial_line_buf.seen_lf = 0;
 
-		  parse_result = gcode_parse_line (&serial_line_buf);
-		  serial_line_buf.len = 0;
-		  serial_line_buf.seen_lf = 0;
-
+		   }
 	   }
-	 }
+	   else
+	   {
+		   	 while (serial_line_buf.len < FLASH_BUF_SIZE)
+			 {
+				 serial_line_buf.data[serial_line_buf.len++] = 0xFF;
+			 }
+
+		   	 GPIO_SetValue (1, (1<<9));
+
+			 write_flash((unsigned *) (pmem), (char *) &sector, FLASH_BUF_SIZE);
+
+			 GPIO_ClearValue (1, (1<<9));
+
+			 serial_line_buf.len = 0;
+			 serial_line_buf.seen_lf = 0;
+	   }
+	}
 }
