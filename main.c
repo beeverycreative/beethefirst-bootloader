@@ -135,7 +135,7 @@ int main()
 	USBSerial_Init();
 
 	char sector[512] = {0};
-	unsigned *pmem=(unsigned *) (SECTOR_16_START);
+	unsigned *pmem=(unsigned *) (USER_FLASH_START);
 	int counter = 0;
 
 
