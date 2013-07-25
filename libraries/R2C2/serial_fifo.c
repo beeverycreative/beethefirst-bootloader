@@ -30,6 +30,8 @@
 #include "lpcusb_type.h"
 #include "serial_fifo.h"
 #include "LPC17xx.h"
+#include "usb.h"
+#include "usbapi.h"
 
 void fifo_init(fifo_t *fifo, unsigned char *buf)
 {
@@ -44,7 +46,9 @@ unsigned char fifo_put(fifo_t *fifo, unsigned char c)
   unsigned char t;
   NVIC_DisableIRQ(USB_IRQn);
   t = _fifo_put(fifo, c);
+  USBHwNakIntEnable(INACK_BI);
   NVIC_EnableIRQ(USB_IRQn);
+
   return t;
 }
 

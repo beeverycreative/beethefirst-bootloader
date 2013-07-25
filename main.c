@@ -71,10 +71,11 @@
 #define e_step() digital_write(E_STEP_PORT, E_STEP_PIN, 1)
 
 
+static	unsigned char transferiu = 0;
 
+int main()
+{
 
-
-int main() {
 	eParseResult parse_result;
 
 
@@ -127,74 +128,102 @@ int main() {
 	e_disable();
 	e_step();
 
+	pin_mode(1, (1<<9), 1);
+	pin_mode(1, (1<<10), 1);
+	pin_mode(1, (1<<14), 1);
+
 	USBSerial_Init();
 
-	char sector[512];
+	char sector[512] = {0};
 	unsigned *pmem=(unsigned *) (SECTOR_16_START);
 	int counter = 0;
 
+
+	GPIO_ClearValue (1, (1<<9));
+	GPIO_ClearValue (1, (1<<10));
+	GPIO_SetValue (1, (1<<14));
 	// main loop
-	 for (;;)
-	 {
-	   // process characters from the serial port
-	   while (!serial_line_buf.seen_lf && (serial_rxchars() != 0) && (serial_line_buf.len < MAX_LINE))
-	   {
-		   counter++;
-		 unsigned char c = serial_popchar();
+	for (;;)
+	{
 
-		 if (serial_line_buf.len < MAX_LINE)
-		   serial_line_buf.data [serial_line_buf.len++] = c;
 
-		 if(counter == 64)
-		 {
-			 counter = 0;
-			 serial_writestr("ok\n");
-		 }
+		// process characters from the serial port
+		while (!serial_line_buf.seen_lf && (serial_rxchars() != 0) && (serial_line_buf.len < MAX_LINE)){
+			GPIO_ClearValue (1, (1<<10));
+			unsigned char c= serial_popchar();
+			serial_line_buf.data [serial_line_buf.len] = c;
+			serial_line_buf.len++;
 
-		 if (((c==10) || (c==13)) && (!transfer_mode))
-		 {
-		   if (serial_line_buf.len > 1)
-			 serial_line_buf.seen_lf = 1;
-		   else
-			 serial_line_buf.len = 0;
-		 }
-		 else if (transfer_mode)
-		 {
-			 number_of_bytes = number_of_bytes +1;
-			 if (number_of_bytes == bytes_to_transfer)
-			 {
-				serial_line_buf.seen_lf = 1;
-			 }
+			if (((c==10) || (c==13)) && (transfer_mode==0)){
+				if (serial_line_buf.len > 1){
+					serial_line_buf.seen_lf = 1;
+				}else{
+					serial_line_buf.len = 0;
+				}
+			}
 
-		 }
-	   }
+			if (transfer_mode==1){
+				number_of_bytes = number_of_bytes + 1;
+				if (number_of_bytes == bytes_to_transfer){
+					serial_line_buf.seen_lf = 1;
+				}
+			}
 
-	   if(!transfer_mode)
-	   {
-		   // if queue is full, we wait
-		   if (!plan_queue_full())
-		   {
-			  parse_result = gcode_parse_line (&serial_line_buf);
-			  serial_line_buf.len = 0;
-			  serial_line_buf.seen_lf = 0;
+			GPIO_SetValue (1, (1<<10));
+		}
 
-		   }
-	   }
-	   else
-	   {
-		   	 while (serial_line_buf.len < FLASH_BUF_SIZE)
-			 {
-				 serial_line_buf.data[serial_line_buf.len++] = 0xFF;
-			 }
+		if(!transfer_mode && (serial_line_buf.len != 0)){
+			parse_result = gcode_parse_line (&serial_line_buf);
+			serial_line_buf.len = 0;
+			serial_line_buf.seen_lf = 0;
+		}
 
-		   	 GPIO_SetValue (1, (1<<9));
+		if(transfer_mode && (serial_line_buf.len != 0))
+		{
+			if (counter < FLASH_BUF_SIZE){
 
-			 write_flash((unsigned *) (pmem), (char *) &sector, FLASH_BUF_SIZE);
+				serial_writestr("ok -");
+				serwrite_uint32(serial_line_buf.len);
+				serial_writestr("\n");
+				//This should never occur!
+				if (!((counter + serial_line_buf.len) <= FLASH_BUF_SIZE)){
+					serial_writestr("Danger: sector overflow\n");}
 
-			 GPIO_ClearValue (1, (1<<9));
 
-			 serial_line_buf.len = 0;
-			 serial_line_buf.seen_lf = 0;
-	   }
+				//memcpy(sector[counter],serial_line_buf.data, serial_line_buf.len);
+				for(int i = 0; i < serial_line_buf.len; i++){
+					sector[counter+i]= serial_line_buf.data[i];
+				}
+
+				counter = counter + serial_line_buf.len;
+				serial_line_buf.len = 0;
+				serial_line_buf.seen_lf = 0;
+
+				// number_of_bytes == bytes_to_transfer -> last message
+				if (number_of_bytes == bytes_to_transfer){
+					for(;counter<FLASH_BUF_SIZE;counter++){
+						sector[counter] = 255;
+					}
+
+					transfer_mode = 0;
+					GPIO_ClearValue (1, (1<<14));
+				}
+			}
+
+
+			if (counter == FLASH_BUF_SIZE){
+				GPIO_SetValue (1, (1<<9));
+				write_flash((unsigned *) (pmem), (char *) &sector, FLASH_BUF_SIZE);
+				GPIO_ClearValue (1, (1<<9));
+				pmem=pmem+FLASH_BUF_SIZE;
+				counter = 0;
+			}
+
+		}
+
 	}
+
+
 }
+
+

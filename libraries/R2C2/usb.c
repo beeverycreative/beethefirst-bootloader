@@ -76,7 +76,7 @@ static const U8 abDescriptors[] = {
 // configuration descriptor
   0x09,
   DESC_CONFIGURATION,
-  LE_WORD(126),                // wTotalLength
+  LE_WORD(130),                // wTotalLength
   0x01,                       // bNumInterfaces
   0x01,                       // bConfigurationValue
   0x00,                       // iConfiguration
@@ -117,17 +117,18 @@ static const U8 abDescriptors[] = {
   DESC_STRING,
   'B', 0, 'E', 0, 'E', 0, 'V', 0, 'E', 0, 'R', 0, 'Y', 0, 'C', 0, 'R', 0, 'E', 0, 'A', 0, 'T', 0, 'I', 0, 'V', 0, 'E', 0,
 
-  46,
+  50,
   DESC_STRING,
-  'B', 0, 'E', 0, 'E', 0, 'T', 0, 'H', 0, 'E', 0, 'F', 0, 'I', 0, 'R', 0, 'S', 0, 'T', 0, ' ', 0, '-', 0, ' ', 0, 'f', 0, 'i', 0, 'r', 0, 'm', 0, 'w', 0, 'a', 0, 'r', 0, 'e', 0,
+  'B', 0, 'E', 0, 'E', 0, 'T', 0, 'H', 0, 'E', 0, 'F', 0, 'I', 0, 'R', 0, 'S', 0, 'T', 0, ' ', 0, '-', 0, ' ', 0, 'b', 0, 'o', 0, 'o', 0, 't', 0, 'l', 0, 'o', 0, 'a', 0, 'd', 0, 'e', 0, 'r', 0,
 
   12,
   DESC_STRING,
-  '1', 0, '.', 0, '2', 0, '.', 0, '0', 0, // Version 1.2.0
+  '3', 0, '.', 0, '0', 0, '.', 0, '0', 0,/* bootloader version 2.2.1 */
 
 // terminating zero
   0
 };
+
 
 
 /**
@@ -138,6 +139,9 @@ static const U8 abDescriptors[] = {
  */
 static void BulkOut(U8 bEP, U8 bEPStatus)
 {
+	//GPIO_SetValue (1, (1<<9));
+	  // GPIO_SetValue (1, (1<<10));
+
   int i, iLen;
   int result = 0;
 
@@ -145,6 +149,8 @@ static void BulkOut(U8 bEP, U8 bEPStatus)
 
   if (result < MAX_PACKET_SIZE)
   {
+		//GPIO_ClearValue (1, (1<<9));
+
     return;
   }
 
@@ -161,6 +167,8 @@ static void BulkOut(U8 bEP, U8 bEPStatus)
       break;
     }
   }
+ // GPIO_ClearValue (1, (1<<10));
+
 }
 
 
@@ -174,7 +182,7 @@ static void BulkIn(U8 bEP, U8 bEPStatus)
 {
   int i, iLen;
 
-  // Verifica se não há data para enviar ao PC
+  // Verifica se não há dados do txfifo para enviar ao PC
   if (_fifo_avail(&txfifo) == 0)
   {
     // no more data, disable further NAK interrupts until next USB frame
@@ -185,17 +193,17 @@ static void BulkIn(U8 bEP, U8 bEPStatus)
   // get bytes from transmit FIFO into intermediate buffer
   for (i = 0; i < MAX_PACKET_SIZE; i++)
   {
-    if (!_fifo_get(&txfifo, &abBulkBuf[i]))
-    {
-      break; // sai do ciclo quando o fifo fica vazio, terminando a transferência de informação do &txfifo para &abBulkBuf[].
-    }
+	if (!_fifo_get(&txfifo, &abBulkBuf[i]))
+	{
+	  break; // sai do ciclo quando o fifo fica vazio, terminando a transferência de informação do &txfifo para &abBulkBuf[].
+	}
   }
   iLen = i;
 
   // send over USB
   if (iLen > 0)
   {
-    USBHwEPWrite(bEP, abBulkBuf, iLen);
+	USBHwEPWrite(bEP, abBulkBuf, iLen);
   }
 }
 
