@@ -97,7 +97,7 @@ unsigned write_flash(unsigned * dst, char * src, unsigned no_of_bytes)
 
       write_data( SystemCoreClock/1000,
                 (unsigned)dst,
-                (void *)flash_buf,
+                (void *)src,
                 FLASH_BUF_SIZE);
 
 
@@ -134,16 +134,17 @@ void find_prepare_sector(unsigned cclk, unsigned dst)
 
   __disable_irq();
 
-  for(i = USER_START_SECTOR; i <= MAX_USER_SECTOR; i++)
-  {
-    if(dst < sector_end_map[i])
-    {
-      if(dst == sector_start_map[i])
-      {
-        prepare_sector(i, i, cclk);
-      }
-      prepare_sector(i , i, cclk);
-      break;
+  for(i = USER_START_SECTOR; i <= MAX_USER_SECTOR; i++){
+    if(dst >= sector_start_map[i]){
+    	if(i==MAX_USER_SECTOR){
+    		prepare_sector(i, i, cclk);
+
+    	}else{
+    		if(dst < sector_start_map[i+1]){
+    			prepare_sector(i, i, cclk);
+    			break;
+    		}
+    	}
     }
   }
 

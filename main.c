@@ -70,14 +70,9 @@
 #define e_disable() digital_write(E_ENABLE_PORT, E_ENABLE_PIN, 1)
 #define e_step() digital_write(E_STEP_PORT, E_STEP_PIN, 1)
 
-
-static	unsigned char transferiu = 0;
-
 int main()
 {
-
 	eParseResult parse_result;
-
 
 	// DeInit NVIC and SCBNVIC
 	NVIC_DeInit();
@@ -128,48 +123,49 @@ int main()
 	e_disable();
 	e_step();
 
+	/*configuration of debug pins*/
+	/* NOT USED*/
+/*
 	pin_mode(1, (1<<9), 1);
 	pin_mode(1, (1<<10), 1);
 	pin_mode(1, (1<<14), 1);
-
+*/
 	USBSerial_Init();
 
-	char sector[512] = {0};
-	unsigned *pmem=(unsigned *) (USER_FLASH_START);
-	int counter = 0;
+	/*variables used to store the firmware in the flash memory*/
+	unsigned char sector[FLASH_BUF_SIZE] = {0};
+	unsigned char *pmem;
+	pmem=(USER_FLASH_START);
+	unsigned int counter = 0;
 
-
-	GPIO_ClearValue (1, (1<<9));
-	GPIO_ClearValue (1, (1<<10));
-	GPIO_SetValue (1, (1<<14));
 	// main loop
 	for (;;)
 	{
-
-
 		// process characters from the serial port
-		while (!serial_line_buf.seen_lf && (serial_rxchars() != 0) && (serial_line_buf.len < MAX_LINE)){
-			GPIO_ClearValue (1, (1<<10));
-			unsigned char c= serial_popchar();
-			serial_line_buf.data [serial_line_buf.len] = c;
-			serial_line_buf.len++;
+		while (!serial_line_buf.seen_lf && ((serial_rxchars() != 0) || (transfer_mode==1)) && (serial_line_buf.len < MAX_LINE)){
+			if(serial_rxchars() != 0){
 
-			if (((c==10) || (c==13)) && (transfer_mode==0)){
-				if (serial_line_buf.len > 1){
-					serial_line_buf.seen_lf = 1;
-				}else{
-					serial_line_buf.len = 0;
+				unsigned char c= serial_popchar();
+				serial_line_buf.data [serial_line_buf.len] = c;
+				serial_line_buf.len++;
+
+				/*if it is the last character and is not in transfer mode*/
+				if (((c==10) || (c==13)) && (transfer_mode==0)){
+					if (serial_line_buf.len > 1){
+						serial_line_buf.seen_lf = 1;
+					}else{
+						serial_line_buf.len = 0;
+					}
+				}
+
+				if (transfer_mode==1){
+					number_of_bytes = number_of_bytes + 1;
+					if (number_of_bytes == bytes_to_transfer){
+						serial_line_buf.seen_lf = 1;
+						break;
+					}
 				}
 			}
-
-			if (transfer_mode==1){
-				number_of_bytes = number_of_bytes + 1;
-				if (number_of_bytes == bytes_to_transfer){
-					serial_line_buf.seen_lf = 1;
-				}
-			}
-
-			GPIO_SetValue (1, (1<<10));
 		}
 
 		if(!transfer_mode && (serial_line_buf.len != 0)){
@@ -178,52 +174,83 @@ int main()
 			serial_line_buf.seen_lf = 0;
 		}
 
-		if(transfer_mode && (serial_line_buf.len != 0))
-		{
-			if (counter < FLASH_BUF_SIZE){
+		if(transfer_mode && (serial_line_buf.len != 0)){
 
-				serial_writestr("ok -");
-				serwrite_uint32(serial_line_buf.len);
-				serial_writestr("\n");
-				//This should never occur!
-				if (!((counter + serial_line_buf.len) <= FLASH_BUF_SIZE)){
-					serial_writestr("Danger: sector overflow\n");}
+			/*used in the debug loop back*/
+			/*serial_writeblock(serial_line_buf.data,serial_line_buf.len);*/
 
-
-				//memcpy(sector[counter],serial_line_buf.data, serial_line_buf.len);
-				for(int i = 0; i < serial_line_buf.len; i++){
-					sector[counter+i]= serial_line_buf.data[i];
-				}
-
-				counter = counter + serial_line_buf.len;
-				serial_line_buf.len = 0;
-				serial_line_buf.seen_lf = 0;
-
-				// number_of_bytes == bytes_to_transfer -> last message
-				if (number_of_bytes == bytes_to_transfer){
-					for(;counter<FLASH_BUF_SIZE;counter++){
-						sector[counter] = 255;
-					}
-
-					transfer_mode = 0;
-					GPIO_ClearValue (1, (1<<14));
-				}
+			//This should never occur!
+			if (!((counter + serial_line_buf.len) <= FLASH_BUF_SIZE)){
+				serial_writestr("Danger: sector overflow\n");
 			}
 
+			/*the USB message is transfered to the array that is going to be stored*/
+			for(int i = 0; i < serial_line_buf.len; i++){
+				sector[counter+i]= serial_line_buf.data[i];
+			}
 
+			counter = counter + serial_line_buf.len;
+			serial_line_buf.len = 0;
+			serial_line_buf.seen_lf = 0;
+
+			// number_of_bytes == bytes_to_transfer -> last message
+			if (number_of_bytes == bytes_to_transfer){
+				GPIO_SetValue (1, (1<<10));
+
+				/*fill the rest of the array*/
+				for(;counter<FLASH_BUF_SIZE;counter++){
+					sector[counter] = 255;
+				}
+				counter = FLASH_BUF_SIZE;
+				transfer_mode = 0;
+			}
+
+			/*if the array to be written is full, it is write*/
 			if (counter == FLASH_BUF_SIZE){
-				GPIO_SetValue (1, (1<<9));
-				write_flash((unsigned *) (pmem), (char *) &sector, FLASH_BUF_SIZE);
-				GPIO_ClearValue (1, (1<<9));
+				if (number_of_bytes == bytes_to_transfer){
+					GPIO_SetValue (1, (1<<9));
+				}
+
+				write_flash((pmem), sector, FLASH_BUF_SIZE);
 				pmem=pmem+FLASH_BUF_SIZE;
 				counter = 0;
 			}
 
+			/*reads the firmware and sends it to the software so that it can check that it is well written*/
+			/*NOT USED*/
+			/*
+			if (number_of_bytes == bytes_to_transfer){
+
+				int jj=1;
+				for(int j=0;j<1000;j++){
+
+					for(int jjj=0;jjj<1000;jjj++){
+
+						GPIO_ClearValue (1, (1<<14));
+					}
+				}
+
+				 unsigned char  *pmem2;
+				 pmem2 = (unsigned *) (USER_FLASH_START);
+				 unsigned int j=0;
+				 unsigned int full_b = bytes_to_transfer - (bytes_to_transfer%64);
+
+				 for( j = 0; j < full_b; j = j + 64){
+					for(unsigned int i=0;i<1000;i++){
+						GPIO_SetValue (1, (1<<14));
+
+						for(unsigned int jjj=0;jjj<100;jjj++){
+
+							GPIO_ClearValue (1, (1<<14));
+						}
+					}
+					serial_writeblock(pmem2+j, 64);
+				 }
+				 serial_writeblock(pmem2+full_b, bytes_to_transfer%64);
+			}
+			*/
 		}
-
 	}
-
-
 }
 
 
