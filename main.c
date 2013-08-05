@@ -125,11 +125,11 @@ int main()
 
 	/*configuration of debug pins*/
 	/* NOT USED*/
-/*
+
 	pin_mode(1, (1<<9), 1);
 	pin_mode(1, (1<<10), 1);
 	pin_mode(1, (1<<14), 1);
-*/
+
 	USBSerial_Init();
 
 	/*variables used to store the firmware in the flash memory*/
@@ -177,7 +177,7 @@ int main()
 		if(transfer_mode && (serial_line_buf.len != 0)){
 
 			/*used in the debug loop back*/
-			/*serial_writeblock(serial_line_buf.data,serial_line_buf.len);*/
+			serial_writeblock(serial_line_buf.data,serial_line_buf.len);
 
 			//This should never occur!
 			if (!((counter + serial_line_buf.len) <= FLASH_BUF_SIZE)){
@@ -214,41 +214,29 @@ int main()
 				write_flash((pmem), sector, FLASH_BUF_SIZE);
 				pmem=pmem+FLASH_BUF_SIZE;
 				counter = 0;
-			}
 
-			/*reads the firmware and sends it to the software so that it can check that it is well written*/
-			/*NOT USED*/
-			/*
-			if (number_of_bytes == bytes_to_transfer){
+				//change read_state variable to valid
+				 char sector[512];
+				 char  *pmem5;
+				 int j;
+				 pmem5 = SECTOR_29_START;
 
-				int jj=1;
-				for(int j=0;j<1000;j++){
-
-					for(int jjj=0;jjj<1000;jjj++){
-
-						GPIO_ClearValue (1, (1<<14));
-					}
-				}
-
-				 unsigned char  *pmem2;
-				 pmem2 = (unsigned *) (USER_FLASH_START);
-				 unsigned int j=0;
-				 unsigned int full_b = bytes_to_transfer - (bytes_to_transfer%64);
-
-				 for( j = 0; j < full_b; j = j + 64){
-					for(unsigned int i=0;i<1000;i++){
-						GPIO_SetValue (1, (1<<14));
-
-						for(unsigned int jjj=0;jjj<100;jjj++){
-
-							GPIO_ClearValue (1, (1<<14));
-						}
-					}
-					serial_writeblock(pmem2+j, 64);
+				 for(j = 0; j<20;j++){
+					 sector[j] = *pmem5;
+					 pmem5++;
 				 }
-				 serial_writeblock(pmem2+full_b, bytes_to_transfer%64);
+				 sector[j]=1;
+				 j++;
+				 while (j < FLASH_BUF_SIZE){
+					 sector[j] = *pmem5;
+					 pmem5++;
+					 j++;
+				 }
+
+				 find_prepare_sector(SystemCoreClock , (unsigned *) (SECTOR_29_START));
+				 find_erase_sector(SystemCoreClock , (unsigned *) (SECTOR_29_START));
+				 write_flash((unsigned *) (SECTOR_29_START), (char *) &sector, 512);
 			}
-			*/
 		}
 	}
 }

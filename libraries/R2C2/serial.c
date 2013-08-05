@@ -31,6 +31,7 @@
 #include "serial_fifo.h"
 #include "usb.h"
 #include "LPC17xx.h"
+#include "core_cm3.h"
 
 
 void serial_init()
@@ -72,13 +73,16 @@ void serial_writechar(char data)
 
 void serial_writeblock(void *data, int datalen)
 {
-  NVIC_DisableIRQ(USB_IRQn);
+	//__disable_irq();
+	NVIC_DisableIRQ(USB_IRQn);
 
   int i;
 
   for (i = 0; i < datalen; i++)
     serial_writechar(((uint8_t *) data)[i]);
   NVIC_EnableIRQ(USB_IRQn);
+
+  //__enable_irq();
 
 }
 
