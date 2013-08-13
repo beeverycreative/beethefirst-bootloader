@@ -124,8 +124,6 @@ int main()
 	e_step();
 
 	/*configuration of debug pins*/
-	/* NOT USED*/
-
 	pin_mode(1, (1<<9), 1);
 	pin_mode(1, (1<<10), 1);
 	pin_mode(1, (1<<14), 1);
@@ -137,6 +135,8 @@ int main()
 	unsigned char *pmem;
 	pmem=(USER_FLASH_START);
 	unsigned int counter = 0;
+
+	GPIO_SetValue (1, (1<<10));
 
 	// main loop
 	for (;;)
@@ -193,49 +193,101 @@ int main()
 			serial_line_buf.len = 0;
 			serial_line_buf.seen_lf = 0;
 
-			// number_of_bytes == bytes_to_transfer -> last message
+			// number_of_bytes ==  -> last message
 			if (number_of_bytes == bytes_to_transfer){
+
 				GPIO_SetValue (1, (1<<10));
 
 				/*fill the rest of the array*/
 				for(;counter<FLASH_BUF_SIZE;counter++){
 					sector[counter] = 255;
 				}
-				counter = FLASH_BUF_SIZE;
 				transfer_mode = 0;
 			}
 
 			/*if the array to be written is full, it is write*/
 			if (counter == FLASH_BUF_SIZE){
-				if (number_of_bytes == bytes_to_transfer){
-					GPIO_SetValue (1, (1<<9));
-				}
 
-				write_flash((pmem), sector, FLASH_BUF_SIZE);
+				write_flash(pmem, sector, FLASH_BUF_SIZE);
 				pmem=pmem+FLASH_BUF_SIZE;
 				counter = 0;
 
-				//change read_state variable to valid
-				 char sector[512];
-				 char  *pmem5;
-				 int j;
-				 pmem5 = SECTOR_29_START;
+				if (number_of_bytes == bytes_to_transfer){
 
-				 for(j = 0; j<20;j++){
-					 sector[j] = *pmem5;
-					 pmem5++;
-				 }
-				 sector[j]=1;
-				 j++;
-				 while (j < FLASH_BUF_SIZE){
-					 sector[j] = *pmem5;
-					 pmem5++;
-					 j++;
-				 }
+					//change read_state variable to valid
+					 unsigned char sector2[FLASH_BUF_SIZE];
+					 unsigned char *pmem2;
+					 unsigned int j2;
+					 pmem2 = SECTOR_29_START;
 
-				 find_prepare_sector(SystemCoreClock , (unsigned *) (SECTOR_29_START));
-				 find_erase_sector(SystemCoreClock , (unsigned *) (SECTOR_29_START));
-				 write_flash((unsigned *) (SECTOR_29_START), (char *) &sector, 512);
+					 for(j2 = 0; j2<20;j2++){
+						 sector2[j2] = *pmem2;
+						 pmem2++;
+					 }
+
+					 sector2[j2]=1;
+					 j2++;
+					 pmem2++;
+
+					 while (j2 < FLASH_BUF_SIZE){
+						 sector2[j2] = *pmem2;
+						 pmem2++;
+						 j2++;
+					 }
+
+					 find_prepare_sector(SystemCoreClock , (unsigned *) (SECTOR_29_START));
+					 find_erase_sector(SystemCoreClock , (unsigned *) (SECTOR_29_START));
+					 write_flash(SECTOR_29_START, sector2, FLASH_BUF_SIZE);
+
+
+					 //delay
+					for (int j4 = 0; j4 < 1000; j4++) {
+
+						for (int j5 = 0; j5 < 1000; j5++) {
+
+							GPIO_ClearValue(1, (1 << 14));
+						}
+					}
+/*
+					unsigned char *pmem3;
+					pmem3 = (USER_FLASH_START);
+					unsigned int po=0;
+					unsigned int full_b = bytes_to_transfer - (bytes_to_transfer%64);
+
+					for( po = 0; po < full_b; po = po + 64) {
+						for(unsigned int i=0;i<1000;i++) {
+							GPIO_SetValue (1, (1<<14));
+
+							for(unsigned int j6=0;j6<100;j6++) {
+
+								GPIO_ClearValue (1, (1<<14));
+							}
+						}
+						serial_writeblock(pmem3+po, 64);
+					}
+					for(unsigned int i=0;i<1000;i++) {
+						GPIO_SetValue (1, (1<<14));
+
+						for(unsigned int j7=0;j7<100;j7++) {
+
+							GPIO_ClearValue (1, (1<<14));
+						}
+					}
+					serial_writeblock(pmem3+full_b, bytes_to_transfer%64);
+					*/
+					bytes_to_transfer=0;
+					number_of_bytes = 0;
+
+					for(unsigned int i=0;i<1000;i++) {
+						GPIO_SetValue (1, (1<<14));
+
+						for(unsigned int j7=0;j7<100;j7++) {
+
+							GPIO_ClearValue (1, (1<<14));
+						}
+					}
+					execute_user_code();
+				 }
 			}
 		}
 	}

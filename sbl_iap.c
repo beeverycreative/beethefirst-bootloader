@@ -82,7 +82,7 @@ unsigned write_flash(unsigned * dst, char * src, unsigned no_of_bytes)
 
   if(no_of_bytes == FLASH_BUF_SIZE)
   {
-
+	  __disable_irq();
 	  for(i = 0;i<no_of_bytes;i++)
 	  {
 	    flash_buf[i] = *(src+i);
@@ -121,6 +121,7 @@ unsigned write_flash(unsigned * dst, char * src, unsigned no_of_bytes)
 
       /* Reset flash address */
       dst = 0;
+      __enable_irq();
   }
   else
 	  return 1;
@@ -247,6 +248,8 @@ void iap_entry(unsigned param_tab[], unsigned result_tab[])
 
 void execute_user_code(void)
 {
+	  __disable_irq();
+
   void (*user_code_entry)(void);
 
   unsigned *p;  // used for loading address of reset handler from user flash
@@ -268,8 +271,13 @@ void execute_user_code(void)
   // of user flash
   user_code_entry = (void *) *p;
 
+  GPIO_SetValue (1, (1<<10));
+
   // Jump to user application
   user_code_entry();
+
+  GPIO_ClearValue (1, (1<<10));
+
 }
 
 int user_code_present(void)

@@ -255,7 +255,7 @@ EXTRA_LIBDIRS =
 #OPT = 1
 #OPT = 2
 #OPT = 3
-OPT = s
+OPT = 0
 
 # Debugging format.
 #DEBUG = stabs
@@ -312,8 +312,8 @@ OOCD_CL=-d0
 #OOCD_CL=-d2
 # interface and board/target settings (using the OOCD target-library here)
 ##OOCD_CL+=-f interface/jtagkey.cfg
-OOCD_CL+=-f interface/jtagkey2.cfg
-OOCD_CL+=-f LPC1766.cfg
+OOCD_CL+=-f interface/olimex-jtag-tiny.cfg
+OOCD_CL+=-f LPC1758.cfg
 # set JTAG frequency
 #OOCD_CL+= -c "adapter_khz 500"
 # initialize

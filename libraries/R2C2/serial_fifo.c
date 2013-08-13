@@ -33,6 +33,7 @@
 #include "usb.h"
 #include "usbapi.h"
 #include "core_cm3.h"
+//#include <stdint.h>
 
 void fifo_init(fifo_t *fifo, unsigned char *buf)
 {
@@ -45,14 +46,14 @@ void fifo_init(fifo_t *fifo, unsigned char *buf)
 unsigned char fifo_put(fifo_t *fifo, unsigned char c)
 {
   unsigned char t;
-  //NVIC_DisableIRQ(USB_IRQn);
-  __disable_irq();
+  NVIC_DisableIRQ(USB_IRQn);
+  //__disable_irq();
 
   t = _fifo_put(fifo, c);
   USBHwNakIntEnable(INACK_BI);
 
-  //NVIC_EnableIRQ(USB_IRQn);
-  __enable_irq();
+  NVIC_EnableIRQ(USB_IRQn);
+  //__enable_irq();
   return t;
 }
 
@@ -108,11 +109,11 @@ unsigned char _fifo_get(fifo_t *fifo, unsigned char *pc)
 int fifo_avail(fifo_t *fifo)
 {
   int t;
-  //NVIC_DisableIRQ(USB_IRQn);
-  __disable_irq();
+  NVIC_DisableIRQ(USB_IRQn);
+  //__disable_irq();
   t = _fifo_avail(fifo);
-  //NVIC_EnableIRQ(USB_IRQn);
-  __enable_irq();
+  NVIC_EnableIRQ(USB_IRQn);
+  //__enable_irq();
   return t;
 }
 
@@ -125,11 +126,11 @@ int _fifo_avail(fifo_t *fifo)
 int fifo_free(fifo_t *fifo)
 {
   int t;
-  //NVIC_DisableIRQ(USB_IRQn);
-  __disable_irq();
+  NVIC_DisableIRQ(USB_IRQn);
+  //__disable_irq();
   t = _fifo_free(fifo);
-  //NVIC_EnableIRQ(USB_IRQn);
-  __enable_irq();
+  NVIC_EnableIRQ(USB_IRQn);
+  //__enable_irq();
   return t;
 }
 
