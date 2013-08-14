@@ -121,7 +121,7 @@ void NVIC_SCBDeInit(void)
  *******************************************************************************/
 void NVIC_SetVTOR(uint32_t offset)
 {
-//	SCB->VTOR  = (offset & NVIC_VTOR_MASK);
+	//SCB->VTOR  = (offset & NVIC_VTOR_MASK);
 	SCB->VTOR  = offset;
 }
 

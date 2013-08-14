@@ -248,7 +248,8 @@ void iap_entry(unsigned param_tab[], unsigned result_tab[])
 
 void execute_user_code(void)
 {
-	  __disable_irq();
+	  //__disable_irq();
+
 
   void (*user_code_entry)(void);
 
@@ -271,12 +272,14 @@ void execute_user_code(void)
   // of user flash
   user_code_entry = (void *) *p;
 
-  GPIO_SetValue (1, (1<<10));
+
+  NVIC_DeInit();
+  NVIC_SCBDeInit();
+
 
   // Jump to user application
   user_code_entry();
 
-  GPIO_ClearValue (1, (1<<10));
 
 }
 
