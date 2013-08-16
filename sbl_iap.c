@@ -158,21 +158,23 @@ void find_prepare_sector(unsigned cclk, unsigned dst)
 }
 void find_erase_sector(unsigned cclk, unsigned dst)
 {
- unsigned k;
+  unsigned i;
+
 
   __disable_irq();
 
-  for(k = USER_START_SECTOR;k <= MAX_USER_SECTOR; k++)
-  {
-	if(dst < sector_end_map[k])
-	{
-	  if(dst == sector_start_map[k])
-	  {
-		erase_sector(k, k, cclk);
-	  }
+  for(i = USER_START_SECTOR; i <= MAX_USER_SECTOR; i++){
+    if(dst >= sector_start_map[i]){
+    	if(i==MAX_USER_SECTOR){
+    		prepare_sector(i, i, cclk);
 
-	  break;
-	}
+    	}else{
+    		if(dst < sector_start_map[i+1]){
+    			erase_sector(i, i, cclk);
+    			break;
+    		}
+    	}
+    }
   }
 
   __enable_irq();

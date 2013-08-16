@@ -214,29 +214,32 @@ int main()
 
 					 /*change write_state variable to valid*/
 
-					 unsigned char sector2[FLASH_BUF_SIZE];
-					 unsigned char *pmem2;
-					 unsigned int j2;
-					 pmem2 = SECTOR_29_START;
+					//change read_state variable to invalid
+					char sectora[FLASH_BUF_SIZE];
+					char *pmemc;
+					char state2 = '0';
+					int ja;
+					pmemc = SECTOR_29_START;
 
-					 for(j2 = 0; j2<20;j2++){
-						 sector2[j2] = *pmem2;
-						 pmem2++;
-					 }
+					for (ja = 0; ja < 20; ja++) {
+						sectora[ja] = *pmemc;
+						pmemc++;
+					}
+					sectora[ja] = state2;
+					ja++;
+					pmemc++;
+					while (ja < FLASH_BUF_SIZE) {
+						sectora[ja] = *pmemc;
+						pmemc++;
+						ja++;
+					}
 
-					 sector2[j2]=1;
-					 j2++;
-					 pmem2++;
-
-					 while (j2 < FLASH_BUF_SIZE){
-						 sector2[j2] = *pmem2;
-						 pmem2++;
-						 j2++;
-					 }
-
-					 find_prepare_sector(SystemCoreClock , (unsigned *) (SECTOR_29_START));
-					 find_erase_sector(SystemCoreClock , (unsigned *) (SECTOR_29_START));
-					 write_flash(SECTOR_29_START, sector2, FLASH_BUF_SIZE);
+					find_prepare_sector(SystemCoreClock,
+							(unsigned *) (SECTOR_29_START));
+					find_erase_sector(SystemCoreClock,
+							(unsigned *) (SECTOR_29_START));
+					write_flash((unsigned *) (SECTOR_29_START), (char *) &sectora,
+							FLASH_BUF_SIZE);
 
 					//delay
 					GPIO_SetValue(1, (1 << 14));
