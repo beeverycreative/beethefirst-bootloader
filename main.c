@@ -151,7 +151,7 @@ int main()
 				serial_line_buf.len++;
 
 				/*if it is the last character and is not in transfer mode*/
-				if (((c==10) || (c==13)) && (transfer_mode==0)){
+				if (((c == 10) || (c == 13)) && (transfer_mode == 0)){
 					if (serial_line_buf.len > 1){
 						serial_line_buf.seen_lf = 1;
 					}else{
@@ -159,7 +159,7 @@ int main()
 					}
 				}
 
-				if (transfer_mode==1){
+				if (transfer_mode == 1){
 					number_of_bytes = number_of_bytes + 1;
 					if (number_of_bytes == bytes_to_transfer){
 						serial_line_buf.seen_lf = 1;
@@ -187,7 +187,7 @@ int main()
 
 			/*the USB message is transfered to the array that is going to be stored*/
 			for(int i = 0; i < serial_line_buf.len; i++){
-				sector[counter+i]= serial_line_buf.data[i];
+				sector[counter+i] = serial_line_buf.data[i];
 			}
 
 			counter = counter + serial_line_buf.len;
@@ -198,7 +198,7 @@ int main()
 			if (number_of_bytes == bytes_to_transfer){
 
 				/*fill the rest of the array*/
-				for(;counter<FLASH_BUF_SIZE;counter++){
+				for(;counter < FLASH_BUF_SIZE; counter++){
 					sector[counter] = 255;
 				}
 			}
@@ -207,44 +207,43 @@ int main()
 			if (counter == FLASH_BUF_SIZE){
 
 				write_flash(pmem, sector, FLASH_BUF_SIZE);
-				pmem=pmem+FLASH_BUF_SIZE;
+				pmem = pmem + FLASH_BUF_SIZE;
 				counter = 0;
 
 				if (number_of_bytes == bytes_to_transfer){
 
-					 /*change write_state variable to valid*/
 
-					//change read_state variable to invalid
-					char sectora[FLASH_BUF_SIZE];
-					char *pmemc;
-					char state2 = '0';
-					int ja;
-					pmemc = SECTOR_29_START;
+					//change write_state variable to invalid
+					char sector1[FLASH_BUF_SIZE];
+					char *pmem1;
+					char state = '0';
+					int j1;
+					pmem1 = SECTOR_29_START;
 
-					for (ja = 0; ja < 20; ja++) {
-						sectora[ja] = *pmemc;
-						pmemc++;
+					for (j1 = 0; j1 < 10; j1++) {
+						sector1[j1] = *pmem1;
+						pmem1++;
 					}
-					sectora[ja] = state2;
-					ja++;
-					pmemc++;
-					while (ja < FLASH_BUF_SIZE) {
-						sectora[ja] = *pmemc;
-						pmemc++;
-						ja++;
+					sector1[j1] = state;
+					j1++;
+					pmem1++;
+					while (j1 < FLASH_BUF_SIZE) {
+						sector1[j1] = *pmem1;
+						pmem1++;
+						j1++;
 					}
 
 					find_prepare_sector(SystemCoreClock,
 							(unsigned *) (SECTOR_29_START));
 					find_erase_sector(SystemCoreClock,
 							(unsigned *) (SECTOR_29_START));
-					write_flash((unsigned *) (SECTOR_29_START), (char *) &sectora,
+					write_flash((unsigned *) (SECTOR_29_START), (char *) &sector1,
 							FLASH_BUF_SIZE);
 
 					//delay
 					GPIO_SetValue(1, (1 << 14));
-					for (int j4 = 0; j4 < 1000; j4++) {
-						for (int j5 = 0; j5 < 1000; j5++) {
+					for (int j2 = 0; j2 < 1000; j2++) {
+						for (int j3 = 0; j3 < 1000; j3++) {
 							GPIO_ClearValue(1, (1 << 14));
 						}
 					}
@@ -256,7 +255,7 @@ int main()
 					//delay
 					for(unsigned int i=0;i<1000;i++) {
 						GPIO_SetValue (1, (1<<14));
-						for(unsigned int j7=0;j7<100;j7++) {
+						for(unsigned int j4=0;j4<100;j4++) {
 							GPIO_ClearValue (1, (1<<14));
 						}
 					}

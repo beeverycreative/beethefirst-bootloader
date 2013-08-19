@@ -21,7 +21,6 @@ void read_device_serial_number(void);
 unsigned write_flash(unsigned * dst, char * src, unsigned no_of_bytes);
 void execute_user_code(void);
 int user_code_present(void);
-void erase_user_flash(void);
 void check_isp_entry_pin(void);
 void find_prepare_sector(unsigned cclk, unsigned dst);
 void find_erase_sector(unsigned cclk, unsigned dst);

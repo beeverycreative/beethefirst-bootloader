@@ -73,29 +73,18 @@ void serial_writechar(char data)
 
 void serial_writeblock(void *data, int datalen)
 {
-	//__disable_irq();
-	//NVIC_DisableIRQ(USB_IRQn);
-
   int i;
 
   for (i = 0; i < datalen; i++)
     serial_writechar(((uint8_t *) data)[i]);
-//  NVIC_EnableIRQ(USB_IRQn);
-
-  //__enable_irq();
 
 }
 
 void serial_writestr(char *data)
 {
   uint8_t i = 0, r;
-//	NVIC_DisableIRQ(USB_IRQn);
-	//__disable_irq();
 
   while ((r = data[i++]))
     serial_writechar(r);
-  //NVIC_EnableIRQ(USB_IRQn);
-  //__enable_irq();
-
 
 }

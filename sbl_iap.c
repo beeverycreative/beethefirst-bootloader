@@ -18,7 +18,7 @@
 #include "LPC17xx.h"
 #include "debug.h"
 #include "type.h"
-#include 	"serial.h"
+#include "serial.h"
 // If COMPUTE_BINARY_CHECKSUM is defined, then code will check that checksum
 // contained within binary image is valid.
 //#define COMPUTE_BINARY_CHECKSUM
@@ -100,19 +100,15 @@ unsigned write_flash(unsigned * dst, char * src, unsigned no_of_bytes)
                 (void *)src,
                 FLASH_BUF_SIZE);
 
-
-
       if(result_table[0] != CMD_SUCCESS)
       {
     	  serial_writestr("Error: writing data\n");
       }
 
-
       compare_data( SystemCoreClock/1000,
                 (unsigned)dst,
                 (void *)flash_buf,
                 FLASH_BUF_SIZE);
-
 
       if(result_table[0] != CMD_SUCCESS)
       {
@@ -137,7 +133,7 @@ void find_prepare_sector(unsigned cclk, unsigned dst)
 
   for(i = USER_START_SECTOR; i <= MAX_USER_SECTOR; i++){
     if(dst >= sector_start_map[i]){
-    	if(i==MAX_USER_SECTOR){
+    	if(i == MAX_USER_SECTOR){
     		prepare_sector(i, i, cclk);
 
     	}else{
@@ -160,13 +156,12 @@ void find_erase_sector(unsigned cclk, unsigned dst)
 {
   unsigned i;
 
-
   __disable_irq();
 
   for(i = USER_START_SECTOR; i <= MAX_USER_SECTOR; i++){
     if(dst >= sector_start_map[i]){
-    	if(i==MAX_USER_SECTOR){
-    		prepare_sector(i, i, cclk);
+    	if(i == MAX_USER_SECTOR){
+    		erase_sector(i, i, cclk);
 
     	}else{
     		if(dst < sector_start_map[i+1]){
@@ -250,9 +245,6 @@ void iap_entry(unsigned param_tab[], unsigned result_tab[])
 
 void execute_user_code(void)
 {
-	  //__disable_irq();
-
-
   void (*user_code_entry)(void);
 
   unsigned *p;  // used for loading address of reset handler from user flash
@@ -274,10 +266,8 @@ void execute_user_code(void)
   // of user flash
   user_code_entry = (void *) *p;
 
-
   NVIC_DeInit();
   NVIC_SCBDeInit();
-
 
   // Jump to user application
   user_code_entry();
@@ -344,12 +334,3 @@ void check_isp_entry_pin (void)
   }
 }
 
-void erase_user_flash(void)
-{
-  prepare_sector(USER_START_SECTOR,MAX_USER_SECTOR,SystemCoreClock/1000);
-  erase_sector(USER_START_SECTOR,MAX_USER_SECTOR,SystemCoreClock/1000);
-  if(result_table[0] != CMD_SUCCESS)
-  {
-      serial_writestr("Error: erasing data\n");
-  }
-}
