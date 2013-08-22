@@ -76,7 +76,7 @@ static const U8 abDescriptors[] = {
 // configuration descriptor
   0x09,
   DESC_CONFIGURATION,
-  LE_WORD(130),                // wTotalLength
+  LE_WORD(122),                // wTotalLength
   0x01,                       // bNumInterfaces
   0x01,                       // bConfigurationValue
   0x00,                       // iConfiguration
@@ -121,9 +121,9 @@ static const U8 abDescriptors[] = {
   DESC_STRING,
   'B', 0, 'E', 0, 'E', 0, 'T', 0, 'H', 0, 'E', 0, 'F', 0, 'I', 0, 'R', 0, 'S', 0, 'T', 0, ' ', 0, '-', 0, ' ', 0, 'b', 0, 'o', 0, 'o', 0, 't', 0, 'l', 0, 'o', 0, 'a', 0, 'd', 0, 'e', 0, 'r', 0,
 
-  12,
+  4,
   DESC_STRING,
-  '3', 0, '.', 0, '0', 0, '.', 0, '0', 0,/* bootloader version 2.2.1 */
+  '3', 0,/* bootloader version 3.x.x */
 
 // terminating zero
   0

@@ -137,7 +137,6 @@ INCLUDES = $(APPLIBDIR)/CMSISv1p30_LPC17xx/inc \
 	 $(APPLIBDIR)/LPCUSB/inc \
 	 $(APPLIBDIR)/NXP/Drivers/include \
 	 $(APPLIBDIR)/R2C2/ \
-	 $(APPLIBDIR)/FatFs/src \
 	 inc \
 
 # List C source files here. (C dependencies are automatically generated.)
@@ -154,25 +153,16 @@ SRC =	$(APPLIBDIR)/LPCUSB/src/usbcontrol.c \
 	$(APPLIBDIR)/NXP/Drivers/source/lpc17xx_uart.c \
 	$(APPLIBDIR)/NXP/Drivers/source/lpc17xx_clkpwr.c \
 	$(APPLIBDIR)/NXP/Drivers/source/lpc17xx_ssp.c \
-	$(APPLIBDIR)/FatFs/src/ff.c \
-	$(APPLIBDIR)/FatFs/src/fattime.c \
 	$(APPLIBDIR)/R2C2/usb.c \
 	$(APPLIBDIR)/R2C2/serial_fifo.c \
 	$(APPLIBDIR)/R2C2/serial.c \
+	$(APPLIBDIR)/R2C2/sermsg.c \
 	main.c	\
-	blockdev_sd.c \
-	blockdev_fat.c \
-	msc_bot.c \
-	msc_scsi.c \
-	msc_usb_start.c \
 	sbl_iap.c \
-	spi.c \
-	debug.c \
 	ios.c	\
 	gcode_process.c \
 	gcode_parse.c \
-	planner.c \
-	bootloader.c 
+	reset.c 
 	
 # List C source files here which must be compiled in ARM-Mode (no -mthumb).
 # use file-extension c for "c-only"-files

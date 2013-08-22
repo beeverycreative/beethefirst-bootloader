@@ -1,3 +1,18 @@
+/* Copyright (c) 2013 BEEVC - Electronic Systems	*/
+/*
+ * This file is part of BEESOFT software: you can redistribute it
+ * and/or modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of
+ * the License, or (at your option) any later version. BEESOFT is
+ * distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+ * License for more details. You should have received a copy of the
+ * GNU General Public License along with BEESOFT. If not, see
+ * <http://www.gnu.org/licenses/>.
+ *
+ */
+
 // CMSIS
 #include	"LPC17xx.h"
 #include	"core_cm3.h"
@@ -7,26 +22,17 @@
 #include	"lpc17xx_pinsel.h"
 #include	"lpc17xx_gpio.h"
 
-// FatFs
-#include	"ff.h"
 
 // LPCUSB
 #include	"usbapi.h"
 
 // Local
-#include	"blockdev.h"
 #include	"sbl_iap.h"
 #include	"sbl_config.h"
-#include	"msc_scsi.h"
-#include	"spi.h"
-//#include	"uart.h"
-#include	"debug.h"
 #include    "ios.h"
 #include	"gcode_parse.h"
 #include	"gcode_process.h"
 #include 	"usb.h"
-#include 	"planner.h"
-//#include	"r2c2.h"
 #include 	"serial.h"
 
 
@@ -212,18 +218,14 @@ int main()
 
 				if (number_of_bytes == bytes_to_transfer){
 
-
 					//change write_state variable to invalid
 					char sector1[FLASH_BUF_SIZE];
 					char *pmem1;
 					char state = '0';
-					int j1;
-					pmem1 = SECTOR_29_START;
+					int j1 = 0;
+					pmem1 = SECTOR_15_START;
 
-					for (j1 = 0; j1 < 10; j1++) {
-						sector1[j1] = *pmem1;
-						pmem1++;
-					}
+
 					sector1[j1] = state;
 					j1++;
 					pmem1++;
@@ -233,12 +235,20 @@ int main()
 						j1++;
 					}
 
-					find_prepare_sector(SystemCoreClock,
-							(unsigned *) (SECTOR_29_START));
-					find_erase_sector(SystemCoreClock,
-							(unsigned *) (SECTOR_29_START));
-					write_flash((unsigned *) (SECTOR_29_START), (char *) &sector1,
-							FLASH_BUF_SIZE);
+					prepare_sector(15, 15, SystemCoreClock);
+					erase_sector(15, 15, SystemCoreClock);
+
+					prepare_sector(15, 15, SystemCoreClock);
+					write_data( (unsigned)(SystemCoreClock/1000),
+								(unsigned)(SECTOR_15_START),
+								(unsigned)sector1,
+								(unsigned)FLASH_BUF_SIZE);
+
+
+					compare_data((unsigned)(SystemCoreClock/1000),
+								(unsigned)(SECTOR_15_START),
+								(unsigned)sector1,
+								(unsigned)FLASH_BUF_SIZE);
 
 					//delay
 					GPIO_SetValue(1, (1 << 14));
@@ -248,9 +258,10 @@ int main()
 						}
 					}
 
-					bytes_to_transfer=0;
+					bytes_to_transfer = 0;
 					number_of_bytes = 0;
 					transfer_mode = 0;
+					pmem = (USER_FLASH_START);
 
 					//delay
 					for(unsigned int i=0;i<1000;i++) {

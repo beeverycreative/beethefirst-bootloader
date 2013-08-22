@@ -24,21 +24,26 @@ int user_code_present(void);
 void check_isp_entry_pin(void);
 void find_prepare_sector(unsigned cclk, unsigned dst);
 void find_erase_sector(unsigned cclk, unsigned dst);
+void prepare_sector(unsigned start_sector,unsigned end_sector,unsigned cclk);
+void erase_sector(unsigned start_sector, unsigned end_sector, unsigned cclk);
+void compare_data(unsigned cclk, unsigned dst,unsigned  flash_data_buf, unsigned count);
+void write_data(unsigned cclk, unsigned dst, unsigned flash_data_buf, unsigned count);
+
 
 static unsigned param_table[5];
 static unsigned result_table[5];
 
 typedef enum
 {
-PREPARE_SECTOR_FOR_WRITE	=50,
-COPY_RAM_TO_FLASH		=51,
-ERASE_SECTOR			=52,
-BLANK_CHECK_SECTOR		=53,
-READ_PART_ID			=54,
-READ_BOOT_VER			=55,
-COMPARE                         =56,
-REINVOKE_ISP			=57,
-READ_DEVICE_SERIAL			=58
+	PREPARE_SECTOR_FOR_WRITE	=50,
+	COPY_RAM_TO_FLASH			=51,
+	ERASE_SECTOR				=52,
+	BLANK_CHECK_SECTOR			=53,
+	READ_PART_ID				=54,
+	READ_BOOT_VER				=55,
+	COMPARE                     =56,
+	REINVOKE_ISP				=57,
+	READ_DEVICE_SERIAL			=58
 }IAP_Command_Code;
 
 #define CMD_SUCCESS 0

@@ -1,3 +1,6 @@
+v3.0.0 -- BEETHEFIRST - Bootloader USB
+* Nova versão capaz de escrever o firmware.
+
 v2.2.1 -- BEETHEFIRST - Bootloader USB
 * Correcção das strings USB.
 
