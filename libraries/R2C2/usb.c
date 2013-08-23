@@ -25,7 +25,6 @@
         (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
         THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
 #include "LPC17xx.h"
 #include "lpc17xx_nvic.h"
 #include "lpc17xx_pinsel.h"
@@ -35,6 +34,7 @@
 #include "usbapi.h"
 #include "usbdebug.h"
 #include "serial_fifo.h"
+#include "sbl_config.h"
 
 #define BULK_OUT_EP     0x05
 #define BULK_IN_EP      0x82
@@ -55,7 +55,7 @@ static U8 abClassReqData[8];
 // forward declaration of interrupt handler
 void USBIntHandler(void);
 
-static const U8 abDescriptors[] = {
+static U8 abDescriptors[] = {
 
 // device descriptor
   0x12,
@@ -76,7 +76,7 @@ static const U8 abDescriptors[] = {
 // configuration descriptor
   0x09,
   DESC_CONFIGURATION,
-  LE_WORD(122),                // wTotalLength
+  LE_WORD(146),                // wTotalLength
   0x01,                       // bNumInterfaces
   0x01,                       // bConfigurationValue
   0x00,                       // iConfiguration
@@ -108,7 +108,7 @@ static const U8 abDescriptors[] = {
   LE_WORD(MAX_PACKET_SIZE),   // wMaxPacketSize
   0x00,                       // bInterval
 
-// string descriptors
+// string descriptors122
   0x04,
   DESC_STRING,
   LE_WORD(0x0409),
@@ -121,9 +121,9 @@ static const U8 abDescriptors[] = {
   DESC_STRING,
   'B', 0, 'E', 0, 'E', 0, 'T', 0, 'H', 0, 'E', 0, 'F', 0, 'I', 0, 'R', 0, 'S', 0, 'T', 0, ' ', 0, '-', 0, ' ', 0, 'b', 0, 'o', 0, 'o', 0, 't', 0, 'l', 0, 'o', 0, 'a', 0, 'd', 0, 'e', 0, 'r', 0,
 
-  4,
+  28,
   DESC_STRING,
-  '3', 0,/* bootloader version 3.x.x */
+  '3', 0, '-', 0, '0', 0, '0', 0, '0', 0, '0', 0, '0', 0, '0', 0, '0', 0, '0', 0, '0', 0, '0', 0,/* bootloader version 3.x.x */
 
 // terminating zero
   0
@@ -237,28 +237,53 @@ void enable_USB_interrupts(void);
 
 void USBSerial_Init(void)
 {
-  // initialise stack
-  USBInit();
 
-  // register descriptors
-  USBRegisterDescriptors(abDescriptors);
+	char serialnumber[10] = {0};
+	char *pmem117;
 
-  // register endpoint handlers
-  USBHwRegisterEPIntHandler(BULK_IN_EP, BulkIn);
-  USBHwRegisterEPIntHandler(BULK_OUT_EP, BulkOut);
+	pmem117 = SECTOR_14_START;
+	int serialnumber_present = 0;
+	for (int i = 0; i < 10; i++) {
+		serialnumber[9 - i] = *pmem117;
+		pmem117++;
+		if(*pmem117 != 0xFF)
+			serialnumber_present = 1;
+	}
+	if(serialnumber_present == 1){
+		abDescriptors[142] = serialnumber[0];
+		abDescriptors[144] = serialnumber[1];
+		abDescriptors[146] = serialnumber[2];
+		abDescriptors[148] = serialnumber[3];
+		abDescriptors[150] = serialnumber[4];
+		abDescriptors[152] = serialnumber[5];
+		abDescriptors[154] = serialnumber[6];
+		abDescriptors[156] = serialnumber[7];
+		abDescriptors[158] = serialnumber[8];
+		abDescriptors[160] = serialnumber[9];
+	}
 
-  // register frame handler
-  USBHwRegisterFrameHandler(USBFrameHandler);
+	// initialise stack
+	USBInit();
 
-  // enable bulk-in interrupts on NAKs
-  USBHwNakIntEnable(INACK_BI); // é gerada uma interrupção sempre que o host tenta ler do EP IN mas este está vazio.
+	// register descriptors
+	USBRegisterDescriptors(abDescriptors);
 
-  // initialise VCOM
-  fifo_init(&rxfifo, rxbuf);
-  fifo_init(&txfifo, txbuf);
+	// register endpoint handlers
+	USBHwRegisterEPIntHandler(BULK_IN_EP, BulkIn);
+	USBHwRegisterEPIntHandler(BULK_OUT_EP, BulkOut);
 
-  NVIC_EnableIRQ(USB_IRQn);
+	// register frame handler
+	USBHwRegisterFrameHandler(USBFrameHandler);
 
-  // connect to bus
-  USBHwConnect(TRUE);
+	// enable bulk-in interrupts on NAKs
+	USBHwNakIntEnable(INACK_BI); // é gerada uma interrupção sempre que o host tenta ler do EP IN mas este está vazio.
+
+	// initialise VCOM
+	fifo_init(&rxfifo, rxbuf);
+	fifo_init(&txfifo, txbuf);
+
+	NVIC_EnableIRQ(USB_IRQn);
+
+	// connect to bus
+	USBHwConnect(TRUE);
 }
