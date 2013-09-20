@@ -76,6 +76,27 @@
 #define e_disable() digital_write(E_ENABLE_PORT, E_ENABLE_PIN, 1)
 #define e_step() digital_write(E_STEP_PORT, E_STEP_PIN, 1)
 
+BOOL bootloader_button_pressed(void)
+{
+	/* Configure bootloader IO button P4.29 */
+	PINSEL_CFG_Type pin;
+	pin.Portnum = 4;
+	pin.Pinnum = 29;
+	pin.Funcnum = PINSEL_FUNC_0;
+	pin.Pinmode = PINSEL_PINMODE_PULLUP;
+	pin.OpenDrain = PINSEL_PINMODE_NORMAL;
+	PINSEL_ConfigPin(&pin);
+
+	/* set as input */
+	GPIO_SetDir(4, (1<<29), 0);
+
+	/* Verify if bootloader pin is activated */
+	if(GPIO_ReadValue(4) & (1<<29))
+		return FALSE;
+	return TRUE;
+}
+
+
 int main()
 {
 	eParseResult parse_result;
@@ -134,6 +155,12 @@ int main()
 	pin_mode(1, (1<<9), 1);
 	pin_mode(1, (1<<10), 1);
 	pin_mode(1, (1<<14), 1);
+	GPIO_ClearValue(1, (1 << 9));
+	GPIO_ClearValue(1, (1 << 10));
+	GPIO_ClearValue(1, (1 << 14));
+	char write_state;
+	char *pmem630;
+
 
 	USBSerial_Init();
 
@@ -146,6 +173,19 @@ int main()
 	// main loop
 	for (;;)
 	{
+
+	    if (bootloader_button_pressed()) {
+
+			pmem630 = SECTOR_15_START;
+			write_state = *pmem630;
+
+			if (user_code_present() && (write_state == '0')) {
+				USBHwConnect(FALSE);
+				execute_user_code();
+			}
+
+	    }
+
 		// process characters from the serial port
 		while (!serial_line_buf.seen_lf && ((serial_rxchars() != 0) || (transfer_mode==1)) && (serial_line_buf.len < MAX_LINE)){
 

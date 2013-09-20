@@ -77,7 +77,7 @@ eParseResult process_gcode_command(void) {
 				pmem114 = SECTOR_13_START;
 				int i = 1;
 
-				while (j114 < sizeof(next_target.filename)) {
+				while (j114 < 120) {
 					sector114[j114] = next_target.filename [i];
 					pmem114++;
 					j114++;
@@ -104,10 +104,10 @@ eParseResult process_gcode_command(void) {
 							(unsigned)(SECTOR_13_START),
 							(unsigned)sector114,
 							(unsigned)FLASH_BUF_SIZE);
-				int j = 0;
-				while (j < sizeof(next_target.filename)) {
-					next_target.filename [j] = '0';
-					j++;
+				int ja = 0;
+				while (ja < 120) {
+					next_target.filename [ja] = '0';
+					ja++;
 				}
 			}
 			break;
@@ -120,17 +120,18 @@ eParseResult process_gcode_command(void) {
 				serial_writestr(" N:");
 				serwrite_uint32(next_target.N);
 
-				char firmversion[sizeof(next_target.filename)];
+				char firmversion[120];
 				char *pmem115;
 
 				pmem115 = SECTOR_13_START;
 
-				for (int i = 0; i < sizeof(next_target.filename); i++) {
+				for (int i = 0; i < 120; i++) {
 					firmversion[i] = *pmem115;
 					pmem115++;
 				}
 
 				serial_writestr(" ");
+				firmversion[119]=0;
 				serial_writestr(firmversion);
 				serial_writestr("\r\n");
 			}
@@ -285,6 +286,7 @@ eParseResult process_gcode_command(void) {
 				write_state = *pmem630;
 
 				if (user_code_present() && (write_state == '0')) {
+					USBHwConnect(FALSE);
 					execute_user_code();
 				} else
 					serial_writestr("No firmware available\n");
@@ -389,8 +391,6 @@ eParseResult process_gcode_command(void) {
 					prepare_sector(28, 28, SystemCoreClock);
 					erase_sector(28, 28, SystemCoreClock);
 
-					prepare_sector(29, 29, SystemCoreClock);
-					erase_sector(29, 29, SystemCoreClock);
 				} else
 					serial_writestr("Error erasing user flash\n");
 			}
