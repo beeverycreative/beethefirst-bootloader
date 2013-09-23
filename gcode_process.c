@@ -144,7 +144,7 @@ eParseResult process_gcode_command(void) {
 				serial_writestr("ok ");
 				serial_writestr(" N:");
 				serwrite_uint32(next_target.N);
-				serial_writestr(" 3.1.1\r\n");
+				serial_writestr(" 3.2.0\r\n");
 			}
 			break;
 
@@ -251,7 +251,7 @@ eParseResult process_gcode_command(void) {
 				serial_writestr(" N:");
 				serwrite_uint32(next_target.N);
 
-				serial_writestr(" BEETHEFIRST V1.0");
+				serial_writestr(" BEETHEFIRST V1.1.0");
 				serial_writestr("\r\n");
 			}
 			break;
