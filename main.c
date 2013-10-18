@@ -150,17 +150,8 @@ int main()
 	e_disable();
 	e_step();
 
-	/*configuration of debug and delay pins*/
-
-	pin_mode(1, (1<<9), 1);
-	pin_mode(1, (1<<10), 1);
-	pin_mode(1, (1<<14), 1);
-	GPIO_ClearValue(1, (1 << 9));
-	GPIO_ClearValue(1, (1 << 10));
-	GPIO_ClearValue(1, (1 << 14));
 	char write_state;
 	char *pmem630;
-
 
 	USBSerial_Init();
 
@@ -187,41 +178,51 @@ int main()
 	    }
 
 		// process characters from the serial port
-		while (!serial_line_buf.seen_lf && ((serial_rxchars() != 0) || (transfer_mode==1)) && (serial_line_buf.len < MAX_LINE)){
+		while (!serial_line_buf.seen_lf
+				&& ((serial_rxchars() != 0)
+						|| (transfer_mode==1))
+				&& (serial_line_buf.len < MAX_LINE)){
 
 			/*if it is transfer but it has no characteres, it should just continue*/
 			if(serial_rxchars() != 0){
 
-				unsigned char c= serial_popchar();
+				unsigned char c = serial_popchar();
+
 				serial_line_buf.data [serial_line_buf.len] = c;
 				serial_line_buf.len++;
 
 				/*if it is the last character and is not in transfer mode*/
-				if (((c == 10) || (c == 13)) && (transfer_mode == 0)){
+				if (((c == 10)
+						|| (c == 13))
+					&& (transfer_mode == 0)){
+
 					if (serial_line_buf.len > 1){
 						serial_line_buf.seen_lf = 1;
 					}else{
 						serial_line_buf.len = 0;
 					}
-				}
+				}/*no need for else*/
 
 				if (transfer_mode == 1){
 					number_of_bytes = number_of_bytes + 1;
 					if (number_of_bytes == bytes_to_transfer){
 						serial_line_buf.seen_lf = 1;
 						break;
-					}
-				}
+					}/*no need for else*/
+				}/*no need for else*/
 			}/*no need for else*/
 		}
 
-		if(!transfer_mode && (serial_line_buf.len != 0)){
+		if(!transfer_mode
+			&& (serial_line_buf.len != 0)){
+
 			parse_result = gcode_parse_line (&serial_line_buf);
 			serial_line_buf.len = 0;
 			serial_line_buf.seen_lf = 0;
 		}
 
-		if(transfer_mode && (serial_line_buf.len != 0)){
+		if(transfer_mode
+			&& (serial_line_buf.len != 0)){
 
 			/*used in the debug loop back*/
 			serial_writeblock(serial_line_buf.data,serial_line_buf.len);
@@ -264,7 +265,6 @@ int main()
 					char state = '0';
 					int j1 = 0;
 					pmem1 = SECTOR_15_START;
-
 
 					sector1[j1] = state;
 					j1++;

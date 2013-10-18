@@ -1,5 +1,11 @@
+BEETHEFIRST-bootloader-3.4.0-beta+20131018115500.bin
+Semelhante ao 3.2.0, mas sem a versão de impressora.
+
+BEETHEFIRST-bootloader-3.3.0-beta+20130930163800.bin
+Alteração do bootloader de forma a arrancar o bootloader perante o pressionar de um botão
+
 BEETHEFIRST-bootloader-3.2.0-beta+20130923100900
-Altareção do bootloader de forma a arrancar firmware perante o pressionar de um botão
+Alteração do bootloader de forma a arrancar firmware perante o pressionar de um botão
 
 BEETHEFIRST-bootloader-3.1.1-beta+20130830122600
 * Alteração do ID do bootloader de forma a ser distinto do do firmware e mudança do serial de forma a apresentar só o numero de serie

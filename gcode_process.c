@@ -144,7 +144,7 @@ eParseResult process_gcode_command(void) {
 				serial_writestr("ok ");
 				serial_writestr(" N:");
 				serwrite_uint32(next_target.N);
-				serial_writestr(" 3.2.0\r\n");
+				serial_writestr(" 3.4.0\r\n");
 			}
 			break;
 
@@ -240,19 +240,6 @@ eParseResult process_gcode_command(void) {
 				serial_writestr("\r\n");
 
 				go_to_reset(); // reinicia o sistema
-			}
-			break;
-
-			// M620 - devolve a versão/nome da impressora
-			case 620:
-			{
-				//sends ok message
-				serial_writestr("ok ");
-				serial_writestr(" N:");
-				serwrite_uint32(next_target.N);
-
-				serial_writestr(" BEETHEFIRST V1.1.0");
-				serial_writestr("\r\n");
 			}
 			break;
 

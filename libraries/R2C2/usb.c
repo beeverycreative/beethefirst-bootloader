@@ -139,9 +139,6 @@ static U8 abDescriptors[] = {
  */
 static void BulkOut(U8 bEP, U8 bEPStatus)
 {
-	//GPIO_SetValue (1, (1<<9));
-	  // GPIO_SetValue (1, (1<<10));
-
   int i, iLen;
   int result = 0;
 
@@ -149,8 +146,6 @@ static void BulkOut(U8 bEP, U8 bEPStatus)
 
   if (result < MAX_PACKET_SIZE)
   {
-		//GPIO_ClearValue (1, (1<<9));
-
     return;
   }
 
@@ -167,8 +162,6 @@ static void BulkOut(U8 bEP, U8 bEPStatus)
       break;
     }
   }
- // GPIO_ClearValue (1, (1<<10));
-
 }
 
 
@@ -237,7 +230,6 @@ void enable_USB_interrupts(void);
 
 void USBSerial_Init(void)
 {
-
 	char serialnumber[10] = {0};
 	char *pmem117;
 
