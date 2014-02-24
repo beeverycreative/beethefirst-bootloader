@@ -60,13 +60,13 @@ static U8 abDescriptors[] = {
 // device descriptor
   0x12,
   DESC_DEVICE,
-  LE_WORD(0x0101),            // bcdUSB
+  LE_WORD(0x0110),            // bcdUSB
   0xFF,                       // bDeviceClass
   0x00,                       // bDeviceSubClass
   0x00,                       // bDeviceProtocol
   MAX_PACKET_SIZE0,           // bMaxPacketSize
-  LE_WORD(0xFFFF),            // idVendor
-  LE_WORD(334),               // idProduct
+  LE_WORD(0x29C9),            // idVendor
+  LE_WORD(0x0001),               // idProduct
   LE_WORD(0x0100),            // bcdDevice
   0x01,                       // iManufacturer
   0x02,                       // iProduct

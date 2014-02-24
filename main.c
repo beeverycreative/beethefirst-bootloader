@@ -21,7 +21,7 @@
 #include	"lpc17xx_nvic.h"
 #include	"lpc17xx_pinsel.h"
 #include	"lpc17xx_gpio.h"
-
+#include 	"lpc17xx_wdt.h"
 
 // LPCUSB
 #include	"usbapi.h"
@@ -160,22 +160,15 @@ int main()
 	unsigned char *pmem;
 	pmem = (USER_FLASH_START);
 	unsigned int counter = 0;
+	unsigned result;
+
+	WDT_Init (WDT_CLKSRC_PCLK, WDT_MODE_RESET );
+	WDT_Start (30000000);
 
 	// main loop
 	for (;;)
 	{
-
-	    if (bootloader_button_pressed()) {
-
-			pmem630 = SECTOR_15_START;
-			write_state = *pmem630;
-
-			if (user_code_present() && (write_state == '0')) {
-				USBHwConnect(FALSE);
-				execute_user_code();
-			}
-
-	    }
+		WDT_Feed();
 
 		// process characters from the serial port
 		while (!serial_line_buf.seen_lf
@@ -219,7 +212,7 @@ int main()
 			parse_result = gcode_parse_line (&serial_line_buf);
 			serial_line_buf.len = 0;
 			serial_line_buf.seen_lf = 0;
-		}
+		}/*no need for else*/
 
 		if(transfer_mode
 			&& (serial_line_buf.len != 0)){
@@ -230,7 +223,7 @@ int main()
 			/*This should never occur!*/
 			if (!((counter + serial_line_buf.len) <= FLASH_BUF_SIZE)){
 				serial_writestr("Danger: sector overflow\n");
-			}
+			}/*no need for else*/
 
 			/*the USB message is transfered to the array that is going to be stored*/
 			for(int i = 0; i < serial_line_buf.len; i++){
@@ -248,12 +241,16 @@ int main()
 				for(;counter < FLASH_BUF_SIZE; counter++){
 					sector[counter] = 255;
 				}
-			}
+			}/*no need for else*/
 
 			/*if the array to be written is full, it is write*/
 			if (counter == FLASH_BUF_SIZE){
 
-				write_flash(pmem, sector, FLASH_BUF_SIZE);
+				result = write_flash(pmem, sector, FLASH_BUF_SIZE);
+				if(result != CMD_SUCCESS){
+					serial_writestr("Problem writing sector\n");
+				}/*No need for else*/
+
 				pmem = pmem + FLASH_BUF_SIZE;
 				counter = 0;
 
@@ -290,29 +287,14 @@ int main()
 								(unsigned)sector1,
 								(unsigned)FLASH_BUF_SIZE);
 
-					//delay
-					GPIO_SetValue(1, (1 << 14));
-					for (int j2 = 0; j2 < 1000; j2++) {
-						for (int j3 = 0; j3 < 1000; j3++) {
-							GPIO_ClearValue(1, (1 << 14));
-						}
-					}
-
 					bytes_to_transfer = 0;
 					number_of_bytes = 0;
 					transfer_mode = 0;
 					pmem = (USER_FLASH_START);
 
-					//delay
-					for(unsigned int i=0;i<1000;i++) {
-						GPIO_SetValue (1, (1<<14));
-						for(unsigned int j4=0;j4<100;j4++) {
-							GPIO_ClearValue (1, (1<<14));
-						}
-					}
-				 }
-			}
-		}
+				 }/*no need for else*/
+			}/*no need for else*/
+		}/*no need for else*/
 	}
 }
 
