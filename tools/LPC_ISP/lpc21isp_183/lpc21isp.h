@@ -38,7 +38,7 @@ Portions Copyright (c) by Aeolus Development 2004 http://www.aeolusdevelopment.c
 #elif defined(__CYGWIN__)
 #define COMPILE_FOR_CYGWIN
 #define COMPILED_FOR "Cygwin"
-#elif defined(__arm__) || defined(__thumb__)
+#elif (defined(__arm__) || defined(__thumb__)) && !defined(__linux__)
 #define COMPILE_FOR_LPC21
 #define COMPILED_FOR "ARM"
 #define printf iprintf
@@ -143,6 +143,13 @@ typedef unsigned char BINARY;               // Data type used for microcontrolle
 /** Used to create list of files to read in. */
 typedef struct file_list FILE_LIST;
 
+#define ERR_RECORD_TYPE_LOADFILE  55  /**< File record type not yet implemented. */
+#define ERR_ALLOC_FILE_LIST       60  /**< Error allocation file list. */
+#define ERR_FILE_OPEN_HEX         61  /**< Couldn't open hex file. */
+#define ERR_FILE_SIZE_HEX         62  /**< Unexpected hex file size. */
+#define ERR_FILE_ALLOC_HEX        63  /**< Couldn't allocate enough memory for hex file. */
+#define ERR_MEMORY_RANGE          69  /**< Out of memory range. */
+
 /** Structure used to build list of input files. */
 struct file_list
 {
@@ -165,6 +172,7 @@ typedef struct
     FILE_LIST *f_list;                  // List of files to read in.
     int nQuestionMarks; // how many times to try to synchronise
     int DoNotStart;
+    int BootHold;
     char *serial_port;                  // Name of the serial port to use to
                                         // communicate with the microcontroller.
                                         // Read from the command line.
@@ -213,7 +221,11 @@ typedef struct
     unsigned char NoSync;
 #endif
 
+#if defined COMPILE_FOR_WINDOWS || defined COMPILE_FOR_CYGWIN
+    unsigned long serial_timeout_count;   /**< Local used to track timeouts on serial port read. */
+#else
     unsigned serial_timeout_count;   /**< Local used to track timeouts on serial port read. */
+#endif
 
 } ISP_ENVIRONMENT;
 
@@ -244,6 +256,7 @@ void DebugPrintf(int level, const char *fmt, ...);
 #endif
 
 void ClearSerialPortBuffers(ISP_ENVIRONMENT *IspEnvironment);
+void ControlXonXoffSerialPort(ISP_ENVIRONMENT *IspEnvironment, unsigned char XonXoff);
 
 #endif
 
@@ -285,5 +298,5 @@ void SendComPort(ISP_ENVIRONMENT *IspEnvironment, const char *s);
 void SendComPortBlock(ISP_ENVIRONMENT *IspEnvironment, const void *s, size_t n);
 int ReceiveComPortBlockComplete(ISP_ENVIRONMENT *IspEnvironment, void *block, size_t size, unsigned timeout);
 void ClearSerialPortBuffers(ISP_ENVIRONMENT *IspEnvironment);
+void ControlXonXoffSerialPort(ISP_ENVIRONMENT *IspEnvironment, unsigned char XonXoff);
 
-int lpctest(char* FileName);
