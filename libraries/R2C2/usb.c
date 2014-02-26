@@ -230,7 +230,7 @@ void enable_USB_interrupts(void);
 
 void USBSerial_Init(void)
 {
-	/*
+
 	char serialnumber[10] = {0};
 	char *pmem117;
 
@@ -254,7 +254,7 @@ void USBSerial_Init(void)
 		abDescriptors[128] = serialnumber[8];
 		abDescriptors[130] = serialnumber[9];
 	}
-*/
+
 	// initialise stack
 	USBInit();
 
