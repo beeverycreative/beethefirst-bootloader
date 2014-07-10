@@ -56,6 +56,7 @@ double auto_prime_factor = 640;
 double auto_reverse_factor = 640;
 
 eParseResult process_gcode_command(void) {
+
 	double backup_f;
 	uint8_t axisSelected = 0;
 	eParseResult result = PR_OK;
@@ -63,13 +64,17 @@ eParseResult process_gcode_command(void) {
 	if (next_target.seen_M) {
 
 		switch (next_target.M) {
+
+			//writes firmware version
 			case 114:
 			{
 				//sends ok message
 				serial_writestr("ok ");
-				serial_writestr(" N:");
-				serwrite_uint32(next_target.N);
-				serial_writestr(" \r\n");
+				if(next_target.seen_N){
+					serial_writestr(" N:");
+					serwrite_uint32(next_target.N);
+				}/*no need for else*/
+				serial_writestr("\n");
 
 				char sector114[FLASH_BUF_SIZE] = {0};
 				int j114 = 0;
@@ -104,6 +109,8 @@ eParseResult process_gcode_command(void) {
 							(unsigned)(SECTOR_13_START),
 							(unsigned)sector114,
 							(unsigned)FLASH_BUF_SIZE);
+
+				//cleans the filename
 				int ja = 0;
 				while (ja < 120) {
 					next_target.filename [ja] = '0';
@@ -117,12 +124,15 @@ eParseResult process_gcode_command(void) {
 			{
 				//sends ok message
 				serial_writestr("ok ");
-				serial_writestr(" N:");
-				serwrite_uint32(next_target.N);
+				if(next_target.seen_N){
+					serial_writestr(" N:");
+					serwrite_uint32(next_target.N);
+				}/*no need for else*/
 
 				char firmversion[120];
 				char *pmem115;
 
+				//reads from 120 characters from the flash
 				pmem115 = SECTOR_13_START;
 
 				for (int i = 0; i < 120; i++) {
@@ -131,7 +141,8 @@ eParseResult process_gcode_command(void) {
 				}
 
 				serial_writestr(" ");
-				firmversion[119]=0;
+				//the last one last be a NULL so that writestr knows where the string ends
+				firmversion[119] = 0;
 				serial_writestr(firmversion);
 				serial_writestr("\r\n");
 			}
@@ -142,9 +153,13 @@ eParseResult process_gcode_command(void) {
 			{
 				//sends ok message
 				serial_writestr("ok ");
-				serial_writestr(" N:");
-				serwrite_uint32(next_target.N);
-				serial_writestr(" 3.4.0\r\n");
+				if(next_target.seen_N){
+					serial_writestr(" N:");
+					serwrite_uint32(next_target.N);
+				}/*no need for else*/
+
+				//it is hard coded
+				serial_writestr(" 4.0.0\r\n");
 			}
 			break;
 
@@ -153,10 +168,12 @@ eParseResult process_gcode_command(void) {
 			{
 				//sends ok message
 				serial_writestr("ok ");
-				serial_writestr(" N:");
-				serwrite_uint32(next_target.N);
+				if(next_target.seen_N){
+					serial_writestr(" N:");
+					serwrite_uint32(next_target.N);
+				}/*no need for else*/
 
-				//try to read the unique ID - not working in this LCP Revision
+				//try to read the unique ID - not working in this LPC1758 Revision
 				/*
 				 serial_writestr(" ");
 				 read_device_serial_number();
@@ -167,9 +184,9 @@ eParseResult process_gcode_command(void) {
 				char *pmem117;
 
 				pmem117 = SECTOR_14_START;
-
+				//reads 10 characters and inverts the order
 				for (int i = 0; i < 10; i++) {
-					serialnumber[9 - i] = *pmem117;
+					serialnumber[9-i] = *pmem117;
 					pmem117++;
 				}
 
@@ -179,36 +196,41 @@ eParseResult process_gcode_command(void) {
 			}
 			break;
 
+			//writes serial number
 			case 118:
 			{
 				//sends ok message
 				serial_writestr("ok ");
-				serial_writestr(" N:");
-				serwrite_uint32(next_target.N);
-				serial_writestr(" \r\n");
+				if(next_target.seen_N){
+					serial_writestr(" N:");
+					serwrite_uint32(next_target.N);
+				}/*no need for else*/
+				serial_writestr("\n");
 
 				char sector118[FLASH_BUF_SIZE] = {0};
-				int j118 = 0;
+				int j118 = 1;
 				uint32_t aux = 0;
 				unsigned *pmem118;
 				pmem118 = SECTOR_14_START;
 
-				aux = (next_target.T);
+				while (j118 < 11) {
+					if((next_target.filename [j118]<'0')
+					  || (next_target.filename [j118]>'9')){
 
-				if(aux < 0 ||aux > 2147483647){
-					serial_writestr("serial number invalid\n");
-					break;
-				}
+						serial_writestr("invalid serial number\n");
+						next_target.filename[119]=0;
+						serial_writestr(next_target.filename);
 
-				/*int to char*/
-				for (j118 = 0; j118 < 10; j118++) {
-					sector118[j118] = (char) ((aux) % 10 + '0');
-					aux = aux / 10;
+						return result;
+					}/*no need for else*/
+					sector118[10-j118] = next_target.filename [j118];
 					pmem118++;
+					j118++;
 				}
 
-				while (j118 < FLASH_BUF_SIZE) {
-					sector118[j118] = *pmem118;
+				//stuffs the rest of the buffer
+				while (j118 <= FLASH_BUF_SIZE) {
+					sector118[j118-1] = *pmem118;
 					pmem118++;
 					j118++;
 				}
@@ -227,6 +249,13 @@ eParseResult process_gcode_command(void) {
 							(unsigned)(SECTOR_14_START),
 							(unsigned)sector118,
 							(unsigned)FLASH_BUF_SIZE);
+
+				//cleans the filename
+				int ja = 0;
+				while (ja < 120) {
+					next_target.filename [ja] = '0';
+					ja++;
+				}
 			}
 			break;
 
@@ -235,58 +264,34 @@ eParseResult process_gcode_command(void) {
 			{
 				//sends ok message
 				serial_writestr("ok ");
-				serial_writestr(" N:");
-				serwrite_uint32(next_target.N);
-				serial_writestr("\r\n");
+				if(next_target.seen_N){
+					serial_writestr(" N:");
+					serwrite_uint32(next_target.N);
+				}/*no need for else*/
+				serial_writestr("\n");
 
 				go_to_reset(); // reinicia o sistema
 			}
 			break;
 
+			//go to firmware
 			case 630:
 			{
-				//sends ok message
-				serial_writestr("ok ");
-				serial_writestr(" N:");
-				serwrite_uint32(next_target.N);
-				serial_writestr("\r\n");
-
-				/*delay to let the ok message to be written in the fifo*/
-				int a = 0;
-				for(unsigned int i = 0; i < 1000; i++){
-					 for(unsigned int jj = 0; jj < 100; jj++){
-						 if (a == 0){
-							a = 1;
-							GPIO_ClearValue(1, (1 << 14));
-						}else{
-							a = 0;
-							GPIO_SetValue(1, (1 << 14));
-						}
-					 }
-				 }
-
-				char write_state;
-				char *pmem630;
-
-				pmem630 = SECTOR_15_START;
-
-				write_state = *pmem630;
-
-				if (user_code_present() && (write_state == '0')) {
-					USBHwConnect(FALSE);
-					execute_user_code();
-				} else
-					serial_writestr("No firmware available\n");
+				USBHwConnect(FALSE);
+				execute_user_code();
 			}
 			break;
 
+			//write firmware
 			case 650:
 			{
 				//sends ok message
 				serial_writestr("ok ");
-				serial_writestr(" N:");
-				serwrite_uint32(next_target.N);
-				serial_writestr("\r\n");
+				if(next_target.seen_N){
+					serial_writestr(" N:");
+					serwrite_uint32(next_target.N);
+				}/*no need for else*/
+				serial_writestr("\n");
 
 				bytes_to_transfer = next_target.A;
 
@@ -316,12 +321,7 @@ eParseResult process_gcode_command(void) {
 						pmem650++;
 						j650++;
 					}
-/*
-					prepare_sector(SECTOR_15_START, SECTOR_15_START, SystemCoreClock);
-					erase_sector(SECTOR_15_START, SECTOR_15_START, SystemCoreClock);
-					write_flash((unsigned *) (SECTOR_15_START), (char *) &sector650,
-							FLASH_BUF_SIZE);
-*/
+
 					prepare_sector(15, 15, SystemCoreClock);
 					erase_sector(15, 15, SystemCoreClock);
 
@@ -338,7 +338,7 @@ eParseResult process_gcode_command(void) {
 								(unsigned)FLASH_BUF_SIZE);
 
 
-					//apagar todos os sectores menos o último
+					//delete all sector but the last
 					prepare_sector(16, 16, SystemCoreClock);
 					erase_sector(16, 16, SystemCoreClock);
 
@@ -383,12 +383,16 @@ eParseResult process_gcode_command(void) {
 			}
 			break;
 
+			//reads the firmware state variable
 			case 651:
 			{
 				//sends ok message
 				serial_writestr("ok ");
-				serial_writestr(" N:");
-				serwrite_uint32(next_target.N);
+				if(next_target.seen_N){
+					serial_writestr(" N:");
+					serwrite_uint32(next_target.N);
+				}/*no need for else*/
+				serial_writestr(" ");
 
 				char write_state651;
 				char *pmem651;
@@ -403,26 +407,14 @@ eParseResult process_gcode_command(void) {
 			}
 			break;
 
+			//reads the firmware and it's variables space
 			case 652:
 			{
-				//sends ok message
-	/*			serial_writestr("ok ");
-				serial_writestr(" N:");
-				serwrite_uint32(next_target.N);
-				serial_writestr("\r\n");
-*/
 				bytes_to_transfer = next_target.A;
 
 				if((bytes_to_transfer < 1) || (bytes_to_transfer > 458752)){
 					serial_writestr("invalid number of bytes to read\n");
 					break;
-				}
-
-				/*delay to allow the ok message to be transmited*/
-				for (int j = 0; j < 1000; j++) {
-					for (int jj = 0; jj < 1000; jj++) {
-						GPIO_ClearValue(1, (1 << 14));
-					}
 				}
 
 				unsigned char *pmem652;
@@ -431,12 +423,6 @@ eParseResult process_gcode_command(void) {
 				unsigned int full_b = bytes_to_transfer - (bytes_to_transfer%64);
 
 				for( po = 0; po < full_b; po = po + 64) {
-
-					while(fifo_free(&txfifo) < 64){
-						GPIO_SetValue (1, (1<<14));
-						GPIO_ClearValue (1, (1<<14));
-					}
-
 					serial_writeblock(pmem652 + po, 64);
 				}
 				while(fifo_free(&txfifo) < 64){
@@ -453,9 +439,21 @@ eParseResult process_gcode_command(void) {
 			{
 				serial_writestr("ok Bad M-code ");
 				serwrite_uint32(next_target.M);
-				serial_writestr("\r\n");
+				if(next_target.seen_N){
+					serial_writestr(" N:");
+					serwrite_uint32(next_target.N);
+				}/*no need for else*/
+				serial_writestr("\n");
 			}
 		}
+	}else{
+		serial_writestr("E: Bad code - ok");
+		if(next_target.seen_N){
+			serial_writestr(" N:");
+			serwrite_uint32(next_target.N);
+			next_target.N = 0;
+		}/*no need for else*/
+		serial_writestr("\r\n");
 	}
 	return result;
 }

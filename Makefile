@@ -153,6 +153,7 @@ SRC =	$(APPLIBDIR)/LPCUSB/src/usbcontrol.c \
 	$(APPLIBDIR)/NXP/Drivers/source/lpc17xx_uart.c \
 	$(APPLIBDIR)/NXP/Drivers/source/lpc17xx_clkpwr.c \
 	$(APPLIBDIR)/NXP/Drivers/source/lpc17xx_ssp.c \
+	$(APPLIBDIR)/NXP/Drivers/source/lpc17xx_wdt.c \
 	$(APPLIBDIR)/R2C2/usb.c \
 	$(APPLIBDIR)/R2C2/serial_fifo.c \
 	$(APPLIBDIR)/R2C2/serial.c \

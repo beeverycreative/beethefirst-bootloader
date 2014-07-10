@@ -102,27 +102,26 @@ eParseResult gcode_parse_line (tLineBuffer *pLine)
 
   eParseResult result = PR_OK;
 
- /* if(!transfer_mode)
-  {*/
-	  for (int j=0; j < pLine->len; j++)
-	  {
-		gcode_parse_char (pLine->data [j]);
-	  }
+  for (int j=0; j < pLine->len; j++)
+  {
+	gcode_parse_char (pLine->data [j]);
+  }
 
-	  // process
-	  result = process_gcode_command();
+  // process
+  result = process_gcode_command();
 
-	  // reset variables
-	  next_target.seen_X = next_target.seen_Y = next_target.seen_Z = \
-	  next_target.seen_E = next_target.seen_F = next_target.seen_S = \
-	  next_target.seen_P = next_target.seen_N = next_target.seen_M = \
-	  next_target.seen_checksum = next_target.seen_semi_comment = \
-	  next_target.seen_parens_comment = next_target.checksum_read = \
-	  next_target.seen_T = next_target.seen_A = next_target.checksum_calculated = 0;
-	  next_target.chpos = 0;
-	  last_field = 0;
-	  read_digit.sign = read_digit.exponent = 0;
-	  value = 0;
+  // reset variables
+  next_target.seen_X = next_target.seen_Y = next_target.seen_Z = \
+  next_target.seen_E = next_target.seen_F = next_target.seen_S = \
+  next_target.seen_P = next_target.seen_N = next_target.seen_M = \
+  next_target.seen_checksum = next_target.seen_semi_comment = \
+  next_target.seen_parens_comment = next_target.checksum_read = \
+  next_target.seen_T = next_target.seen_A = next_target.checksum_calculated = 0;
+  next_target.chpos = 0;
+  next_target.N = 0;
+  last_field = 0;
+  read_digit.sign = read_digit.exponent = 0;
+  value = 0;
 
   return result;
 }
@@ -171,8 +170,8 @@ void gcode_parse_char(uint8_t c)
         // this is a bit hacky since string parameters don't fit in general G code syntax
         // NB: filename MUST start with a letter and MUST NOT contain spaces
         // letters will also be converted to uppercase
-        if ((next_target.M == 23) || (next_target.M == 28) || (next_target.M == 114))
-        {
+        if ((next_target.M == 114)
+        		|| next_target.M == 118){
           next_target.getting_string = 1;
         }
         break;
