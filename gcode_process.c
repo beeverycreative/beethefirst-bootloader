@@ -434,6 +434,112 @@ eParseResult process_gcode_command(void) {
 			}
 			break;
 
+			//write firmware and it's variables
+			case 653:
+			{
+				//sends ok message
+				serial_writestr("ok ");
+				if(next_target.seen_N){
+					serial_writestr(" N:");
+					serwrite_uint32(next_target.N);
+					next_target.N = 0;
+				}/*no need for else*/
+				serial_writestr("\r\n");
+
+				bytes_to_transfer = next_target.A;
+
+				//bytes to transfer is in the right flash memory range
+				if((bytes_to_transfer < 1) || (bytes_to_transfer > 458752)){
+					serial_writestr("invalid number of bytes to transfer\n");
+					break;
+				}
+
+				if (bytes_to_transfer > 0) {
+					number_of_bytes = 0;
+					transfer_mode = 1;
+
+					//change read_state variable to invalid
+					char sector653[FLASH_BUF_SIZE];
+					char *pmem653;
+					char state653 = 0xFF;
+					int j653 = 0;
+					pmem653 = SECTOR_15_START;
+
+					sector653[j653] = state653;
+					j653++;
+					pmem653++;
+
+					while (j653 < FLASH_BUF_SIZE) {
+						sector653[j653] = *pmem653;
+						pmem653++;
+						j653++;
+					}
+
+					prepare_sector(15, 15, SystemCoreClock);
+					erase_sector(15, 15, SystemCoreClock);
+
+					prepare_sector(15, 15, SystemCoreClock);
+					write_data( (unsigned)(SystemCoreClock/1000),
+							(unsigned)(SECTOR_15_START),
+							(unsigned)sector653,
+							(unsigned)FLASH_BUF_SIZE);
+
+
+					compare_data((unsigned)(SystemCoreClock/1000),
+							(unsigned)(SECTOR_15_START),
+							(unsigned)sector653,
+							(unsigned)FLASH_BUF_SIZE);
+					WDT_Feed();
+
+					//delete all sector but the last
+					prepare_sector(16, 16, SystemCoreClock);
+					erase_sector(16, 16, SystemCoreClock);
+
+					prepare_sector(17, 17, SystemCoreClock);
+					erase_sector(17, 17, SystemCoreClock);
+
+					prepare_sector(18, 18, SystemCoreClock);
+					erase_sector(18, 18, SystemCoreClock);
+
+					prepare_sector(19, 19, SystemCoreClock);
+					erase_sector(19, 19, SystemCoreClock);
+
+					prepare_sector(20, 20, SystemCoreClock);
+					erase_sector(20, 20, SystemCoreClock);
+
+					prepare_sector(21, 21, SystemCoreClock);
+					erase_sector(21, 21, SystemCoreClock);
+
+					prepare_sector(22, 22, SystemCoreClock);
+					erase_sector(22, 22, SystemCoreClock);
+					WDT_Feed();
+
+					prepare_sector(23, 23, SystemCoreClock);
+					erase_sector(23, 23, SystemCoreClock);
+
+					prepare_sector(24, 24, SystemCoreClock);
+					erase_sector(24, 24, SystemCoreClock);
+
+					prepare_sector(25, 25, SystemCoreClock);
+					erase_sector(25, 25, SystemCoreClock);
+
+					prepare_sector(26, 26, SystemCoreClock);
+					erase_sector(26, 26, SystemCoreClock);
+
+					prepare_sector(27, 27, SystemCoreClock);
+					erase_sector(27, 27, SystemCoreClock);
+
+					prepare_sector(28, 28, SystemCoreClock);
+					erase_sector(28, 28, SystemCoreClock);
+
+					prepare_sector(29, 29, SystemCoreClock);
+					erase_sector(29, 29, SystemCoreClock);
+
+				} else
+					serial_writestr("Error erasing user flash\n");
+			}
+			break;
+
 			// unknown mcode: spit an error
 			default:
 			{
