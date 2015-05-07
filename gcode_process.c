@@ -159,7 +159,7 @@ eParseResult process_gcode_command(void) {
 				}/*no need for else*/
 
 				//it is hard coded
-				serial_writestr(" 4.1.0\r\n");
+				serial_writestr(" 4.2.0-beta.1\r\n");
 			}
 			break;
 
