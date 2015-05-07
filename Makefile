@@ -511,6 +511,7 @@ btfme: begin createdirs gccversion build sizeafter end
 # BTF_IS
 btfschool: CFLAGS += -DBTF_SCHOOL
 btfschool: begin createdirs gccversion build sizeafter end
+#
 
 # Target for the build-sequence.
 build: elf lss sym hex bin
