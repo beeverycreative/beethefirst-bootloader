@@ -493,7 +493,24 @@ LSTFILES   = $(addprefix $(OUTDIR)/, $(addsuffix .lst, $(ALLSRCBASE)))
 DEPFILES   = $(addprefix $(OUTDIR)/dep/, $(addsuffix .o.d, $(ALLSRCBASE)))
 
 # Default target.
-all: begin createdirs gccversion build sizeafter end
+#all: begin createdirs gccversion build sizeafter end
+all: btf btfplus btfme btfschool
+
+# BTF
+btf: CFLAGS += -DBTF
+btf: begin createdirs gccversion build sizeafter end
+
+# BTF_PLUS
+btfplus: CFLAGS += -DBTF_PLUS
+btfplus: begin createdirs gccversion build sizeafter end
+
+# BTF_ME
+btfme: CFLAGS += -DBTF_ME
+btfme: begin createdirs gccversion build sizeafter end
+
+# BTF_IS
+btfschool: CFLAGS += -DBTF_SCHOOL
+btfschool: begin createdirs gccversion build sizeafter end
 
 # Target for the build-sequence.
 build: elf lss sym hex bin
@@ -509,10 +526,12 @@ ifdef SHELL_IS_WIN32
 createdirs:
 	-@md $(OUTDIR) >NUL 2>&1 || echo "" >NUL
 	-@md $(OUTDIR)\dep >NUL 2>&1 || echo "" >NUL
+	#-@md $(OUTDIR)\BINS  >NUL 2>&1 || echo "" >NUL
 else
 createdirs:
 	-@mkdir $(OUTDIR) 2>/dev/null || echo "" >/dev/null
 	-@mkdir $(OUTDIR)/dep 2>/dev/null || echo "" >/dev/null
+	#-@mkdir $(OUTDIR)/BINS  2>/dev/null || echo "" >/dev/null
 endif
 
 # Eye candy.
@@ -531,6 +550,18 @@ sizeafter:
 #	@if [ -f  $(OUTDIR)/$(TARGET).elf ]; then echo; echo $(MSG_SIZE_AFTER); $(ELFSIZE); echo; fi
 	@echo $(MSG_SIZE_AFTER)
 	@$(ELFSIZE)
+
+copyBtf:
+	cp -f $(OUTDIR)/$(TARGET).bin $(OUTDIR)/BINS/BEETHEFIRST.bin
+
+copyBtfplus:
+	cp -f $(OUTDIR)/$(TARGET).bin $(OUTDIR)/BINS/BEE_PLUS.bin
+
+copyBtfme:
+	cp -f $(OUTDIR)/$(TARGET).bin $(OUTDIR)/BINS/BEE_ME.bin
+
+copyBtfschool:
+	cp -f $(OUTDIR)/$(TARGET).bin $(OUTDIR)/BINS/BEE_SCHOOL.bin
 
 # Display compiler version information.
 gccversion :
