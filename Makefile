@@ -84,6 +84,7 @@
 # - 13. Jun. 2010  - Trigger build when non-source files have changed
 #                    (see BUILDONCHANGE). (mth)
 
+B_Version = 4.2.0
 
 # Toolchain prefix (arm-elf- -> arm-elf-gcc.exe)
 TCHAIN_PREFIX = arm-none-eabi-
@@ -497,20 +498,20 @@ DEPFILES   = $(addprefix $(OUTDIR)/dep/, $(addsuffix .o.d, $(ALLSRCBASE)))
 all: btf btfplus btfme btfschool
 
 # BTF
-btf: CFLAGS += -DBTF
-btf: begin createdirs gccversion build sizeafter end
+btf: CFLAGS += -DBTF -DB_V='"$(B_Version)"'
+btf: begin createdirs gccversion build sizeafter copyBtf end
 
 # BTF_PLUS
-btfplus: CFLAGS += -DBTF_PLUS
-btfplus: begin createdirs gccversion build sizeafter end
+btfplus: CFLAGS += -DBTF_PLUS -DB_V='"$(B_Version)"'
+btfplus: begin createdirs gccversion build sizeafter copyBtfplus end
 
 # BTF_ME
-btfme: CFLAGS += -DBTF_ME
-btfme: begin createdirs gccversion build sizeafter end
+btfme: CFLAGS += -DBTF_ME -DB_V='"$(B_Version)"'
+btfme: begin createdirs gccversion build sizeafter copyBtfme end
 
 # BTF_IS
-btfschool: CFLAGS += -DBTF_SCHOOL
-btfschool: begin createdirs gccversion build sizeafter end
+btfschool: CFLAGS += -DBTF_SCHOOL -DB_V='"$(B_Version)"'
+btfschool: begin createdirs gccversion build sizeafter copyBtfschool end
 #
 
 # Target for the build-sequence.
@@ -553,16 +554,16 @@ sizeafter:
 	@$(ELFSIZE)
 
 copyBtf:
-	cp -f $(OUTDIR)/$(TARGET).bin $(OUTDIR)/BINS/BEETHEFIRST.bin
+	cp -f $(OUTDIR)/$(TARGET).bin releases/BEETHEFIRST-Bootloader-$(B_Version).bin
 
 copyBtfplus:
-	cp -f $(OUTDIR)/$(TARGET).bin $(OUTDIR)/BINS/BEE_PLUS.bin
+	cp -f $(OUTDIR)/$(TARGET).bin releases/BEE_PLUS-Bootloader-$(B_Version).bin
 
 copyBtfme:
-	cp -f $(OUTDIR)/$(TARGET).bin $(OUTDIR)/BINS/BEE_ME.bin
+	cp -f $(OUTDIR)/$(TARGET).bin releases/BEE_ME-Bootloader-$(B_Version).bin
 
 copyBtfschool:
-	cp -f $(OUTDIR)/$(TARGET).bin $(OUTDIR)/BINS/BEE_SCHOOL.bin
+	cp -f $(OUTDIR)/$(TARGET).bin releases/BEE_SCHOOL-Bootloader-$(B_Version).bin
 
 # Display compiler version information.
 gccversion :

@@ -41,6 +41,10 @@
 //#include "lpc17xx_pinsel.h"
 #include "gcode_process.h"
 
+#ifndef B_V
+  #define B_V "0.0.0"
+#endif
+
 #define EXTRUDER_NUM_1  1
 #define EXTRUDER_NUM_2  2
 #define EXTRUDER_NUM_3  4
@@ -159,7 +163,8 @@ eParseResult process_gcode_command(void) {
 				}/*no need for else*/
 
 				//it is hard coded
-				serial_writestr(" 4.2.0-beta.1\r\n");
+				serial_writestr(B_V);
+				serial_writestr("\r\n");
 			}
 			break;
 
