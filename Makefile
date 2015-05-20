@@ -557,13 +557,13 @@ copyBtf:
 	cp -f $(OUTDIR)/$(TARGET).bin releases/BEETHEFIRST-Bootloader-$(B_Version).bin
 
 copyBtfplus:
-	cp -f $(OUTDIR)/$(TARGET).bin releases/BEE_PLUS-Bootloader-$(B_Version).bin
+	cp -f $(OUTDIR)/$(TARGET).bin releases/BEETHEFIRST_PLUS-Bootloader-$(B_Version).bin
 
 copyBtfme:
 	cp -f $(OUTDIR)/$(TARGET).bin releases/BEE_ME-Bootloader-$(B_Version).bin
 
 copyBtfschool:
-	cp -f $(OUTDIR)/$(TARGET).bin releases/BEE_SCHOOL-Bootloader-$(B_Version).bin
+	cp -f $(OUTDIR)/$(TARGET).bin releases/BEE_IN_SCHOOL-Bootloader-$(B_Version).bin
 
 # Display compiler version information.
 gccversion :
