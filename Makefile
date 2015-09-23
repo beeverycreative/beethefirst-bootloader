@@ -495,7 +495,7 @@ DEPFILES   = $(addprefix $(OUTDIR)/dep/, $(addsuffix .o.d, $(ALLSRCBASE)))
 
 # Default target.
 #all: begin createdirs gccversion build sizeafter end
-all: btf btfplus btfme btfschool
+all: btf btfplus btfplusbatt btfme btfschool
 
 # BTF
 btf: CFLAGS += -DBTF -DB_V='"$(B_Version)"'
@@ -504,6 +504,10 @@ btf: begin createdirs gccversion build sizeafter copyBtf end
 # BTF_PLUS
 btfplus: CFLAGS += -DBTF_PLUS -DB_V='"$(B_Version)"'
 btfplus: begin createdirs gccversion build sizeafter copyBtfplus end
+
+# BTF_PLUS_BATT
+btfplusbatt: CFLAGS += -DBTF_PLUS_BATT -DB_V='"$(B_Version)"'
+btfplusbatt: begin createdirs gccversion build sizeafter copyBtfplusBatt end
 
 # BTF_ME
 btfme: CFLAGS += -DBTF_ME -DB_V='"$(B_Version)"'
@@ -558,6 +562,9 @@ copyBtf:
 
 copyBtfplus:
 	cp -f $(OUTDIR)/$(TARGET).bin releases/BEETHEFIRST_PLUS-Bootloader-$(B_Version).bin
+
+copyBtfplusBatt:
+	cp -f $(OUTDIR)/$(TARGET).bin releases/BEETHEFIRST_PLUS_A-Bootloader-$(B_Version).bin
 
 copyBtfme:
 	cp -f $(OUTDIR)/$(TARGET).bin releases/BEE_ME-Bootloader-$(B_Version).bin

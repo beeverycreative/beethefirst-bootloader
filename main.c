@@ -150,6 +150,10 @@ int main()
 	e_disable();
 	e_step();
 
+#ifdef BTF_PLUS_BATT
+	//pin_mode(E_STEP_PORT, E_STEP_PIN, OUTPUT);
+#endif
+
 	char write_state;
 	char *pmem630;
 
