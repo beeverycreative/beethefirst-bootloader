@@ -35,46 +35,76 @@
 #include 	"usb.h"
 #include 	"serial.h"
 
+#include 	"pinout.h"
+#include 	"timer.h"
+#include 	"adc.h"
+#include 	"ExpBoard.h"
 
-#define EXTRUDER_0_HEATER_PORT          2        /* P2.4 */
-#define EXTRUDER_0_HEATER_PIN           (1 << 4) /* P2.4 */
-#define HEATED_BED_0_HEATER_PORT        2        /* P2.5 */
-#define HEATED_BED_0_HEATER_PIN         (1 << 5) /* P2.5 */
-#define EXTRUDER_0_FAN_PORT             2         /* P2.3 */
-#define EXTRUDER_0_FAN_PIN              (1<<3)
-#define BUZZER_PORT                     2         /* P2.2 PWM1[3] */
-#define BUZZER_PIN                      (1 << 22) /* P2.2 PWM1[3] */
-#define STEPPERS_RESET_PORT             0         /* P0.22 */
-#define STEPPERS_RESET_PIN              (1 << 22) /* P0.22 */
+#ifdef EXP_BOARD
+	double current_temp_r2c2 = 0;
+	uint32_t adc_filtered_r2c2 = 4095;
+	int32_t adc_r2c2_raw = 4095;
+#ifdef USE_BATT
+	int32_t ps_ext_state = false;
+	int32_t battADC_raw = 4095;
+	int32_t batt_filtered = 4095;
+	bool charging = false;
+#endif
+#endif
 
-#define extruder_heater_off() digital_write(EXTRUDER_0_HEATER_PORT, EXTRUDER_0_HEATER_PIN, LOW);
-#define heated_bed_off() digital_write(HEATED_BED_0_HEATER_PORT, HEATED_BED_0_HEATER_PIN, LOW);
-#define extruder_fan_off() digital_write(EXTRUDER_0_FAN_PORT, EXTRUDER_0_FAN_PIN, LOW);
-#define buzzer_off() digital_write(BUZZER_PORT, BUZZER_PIN, LOW);
-#define X_ENABLE_PORT                   1         /* P1.24 */
-#define X_ENABLE_PIN                    (1 << 24) /* P1.24 */
-#define X_STEP_PORT                     1         /* P1.20 */
-#define X_STEP_PIN                      (1 << 20) /* P1.20 */
-#define Y_ENABLE_PORT                   1         /* P1.28 */
-#define Y_ENABLE_PIN                    (1 << 28) /* P1.28 */
-#define Y_STEP_PORT                     1         /* P1.25 */
-#define Y_STEP_PIN                      (1 << 25) /* P1.25 */
-#define Z_ENABLE_PORT                   0         /* P0. 1 */
-#define Z_ENABLE_PIN                    (1 <<  1) /* P0. 1 */
-#define Z_STEP_PORT                     1         /* P1.29 */
-#define Z_STEP_PIN                      (1 << 29) /* P1.29 */
-#define E_ENABLE_PORT                   2         /* P2.10 */
-#define E_ENABLE_PIN                    (1 << 10) /* P2.10 */
-#define E_STEP_PORT                     0         /* P0.10 */
-#define E_STEP_PIN                      (1 << 10) /* P0.10 */
-#define x_disable() digital_write(X_ENABLE_PORT, X_ENABLE_PIN, 1)
-#define x_step() digital_write(X_STEP_PORT, X_STEP_PIN, 1)
-#define y_disable() digital_write(Y_ENABLE_PORT, Y_ENABLE_PIN, 1)
-#define y_step() digital_write(Y_STEP_PORT, Y_STEP_PIN, 1)
-#define z_disable() digital_write(Z_ENABLE_PORT, Z_ENABLE_PIN, 1)
-#define z_step() digital_write(Z_STEP_PORT, Z_STEP_PIN, 1)
-#define e_disable() digital_write(E_ENABLE_PORT, E_ENABLE_PIN, 1)
-#define e_step() digital_write(E_STEP_PORT, E_STEP_PIN, 1)
+bool debugMode = false;
+
+//Bootlaoder Timer
+tTimer bootloaderTimer;
+
+void bootloaderTimerCallback (tTimer *pTimer)
+{
+#ifdef EXP_BOARD
+	int32_t r2c2_buf[5];
+	for(int32_t i = 0; i < 5; i++)
+	{
+		r2c2_buf[i] = analog_read(R2C2_TEMP_SENSOR_ADC_CHANNEL);
+	}
+
+	adc_r2c2_raw = getMedianValue(r2c2_buf);
+
+	adc_filtered_r2c2 = adc_filtered_r2c2*0.9 + adc_r2c2_raw*0.1;
+
+	double volts = (double) adc_filtered_r2c2*(3.3/4096);
+
+	current_temp_r2c2 = (volts - 0.5)*100;
+
+
+#ifdef USE_BATT
+	ps_ext_state = digital_read(PS_EXT_READ_PORT,PS_EXT_READ_PIN);
+
+	if(ps_ext_state)
+	{
+		int32_t batt_buf[5];
+		for(int32_t j = 0; j < 5; j++)
+		{
+			batt_buf[j] = analog_read(BATT_ADC_SENSOR_ADC_CHANNEL);
+		}
+
+		battADC_raw = getMedianValue(batt_buf);
+
+		batt_filtered = batt_filtered*0.9 + battADC_raw*0.1;
+
+		if(current_temp_r2c2 > 45 || current_temp_r2c2 < 0)
+		{
+			STEP_uC_disable();
+			charging = false;
+		} else {
+			STEP_uC_enable();
+			charging = true;
+		}
+	} else {
+		BATT_uC_disable();
+	}
+
+#endif
+#endif
+}
 
 BOOL bootloader_button_pressed(void)
 {
@@ -96,24 +126,8 @@ BOOL bootloader_button_pressed(void)
 	return TRUE;
 }
 
-
-int main()
+void io_init(void)
 {
-	eParseResult parse_result;
-
-	// DeInit NVIC and SCBNVIC
-	NVIC_DeInit();
-	NVIC_SCBDeInit();
-
-	/* Configure the NVIC Preemption Priority Bits:
-	 * two (2) bits of preemption priority, six (6) bits of sub-priority.
-	 * Since the Number of Bits used for Priority Levels is five (5), so the
-	 * actual bit number of sub-priority is three (3)
-	 */
-	NVIC_SetPriorityGrouping(0x05);
-
-	NVIC_SetVTOR(0x00000000);
-
 	/*
 	 * Disable some pins like the ones for heaters while on bootloader, if not, the heaters would be ON
 	 */
@@ -150,6 +164,122 @@ int main()
 	e_disable();
 	e_step();
 
+#ifndef EXP_BOARD
+	pin_mode(EXTRUDER_0_FAN_PORT, EXTRUDER_0_FAN_PIN, OUTPUT);
+	extruder_fan_off();
+#endif
+
+#ifdef EXP_BOARD
+	pin_mode(FAN_EXT_ON_PORT, FAN_EXT_ON_PIN, OUTPUT);
+	extruder_block_fan_off();
+
+	pin_mode(BW_ON_PORT,BW_ON_PIN, OUTPUT);
+	pin_mode(BW_V1_PORT,BW_V1_PIN, OUTPUT);
+	blower_off();
+
+	pin_mode(BW_ON_PORT,BW_ON_PIN, OUTPUT);
+	blower_off();
+
+	pin_mode(R2C2_FAN_PORT,R2C2_FAN_PIN, OUTPUT);
+	r2c2_fan_off();
+#endif
+
+#ifdef USE_BATT
+	//Battery Digital I/Os
+	pin_mode(PS_EXT_READ_PORT,PS_EXT_READ_PIN,INPUT);
+
+	pin_mode(STEP_uC_ON_PORT, STEP_uC_ON_PIN, OUTPUT);
+	STEP_uC_enable();
+	pin_mode(BATT_uC_ON_PORT, BATT_uC_ON_PIN, OUTPUT);
+	BATT_uC_disable();
+#endif
+}
+
+void adc_init(void)
+{
+#ifdef EXP_BOARD
+	PINSEL_CFG_Type PinCfg;
+
+	//R2C2 TEMPERATURE ADC CONFIG
+	PinCfg.Funcnum = PINSEL_FUNC_1; /*ADC Function*/
+	PinCfg.OpenDrain = PINSEL_PINMODE_NORMAL;
+	PinCfg.Pinmode = PINSEL_PINMODE_TRISTATE;
+	PinCfg.Portnum = R2C2_TEMP_ADC_PORT;
+	PinCfg.Pinnum = R2C2_TEMP_ADC_PIN;
+	PINSEL_ConfigPin(&PinCfg);
+
+#ifdef USE_BATT
+  //Battery ADC CONFIG
+
+  PinCfg.Funcnum = PINSEL_FUNC_1;
+  PinCfg.OpenDrain = PINSEL_PINMODE_NORMAL;
+  PinCfg.Pinmode = PINSEL_PINMODE_TRISTATE;
+  PinCfg.Portnum = BATT_ADC_PORT;
+  PinCfg.Pinnum = BATT_ADC_PIN;
+  PINSEL_ConfigPin(&PinCfg);
+
+#endif
+
+  ADC_Init(LPC_ADC, 200000); /* ADC conversion rate = 200Khz */
+#endif
+}
+
+void init_analogVars(void)
+{
+#ifdef EXP_BOARD
+
+  __disable_irq();
+  adc_filtered_r2c2 = analog_read(R2C2_TEMP_SENSOR_ADC_CHANNEL);
+  adc_filtered_r2c2 += analog_read(R2C2_TEMP_SENSOR_ADC_CHANNEL);
+  adc_filtered_r2c2 += analog_read(R2C2_TEMP_SENSOR_ADC_CHANNEL);
+  adc_filtered_r2c2 /= 3;
+  __enable_irq();
+
+#ifdef USE_BATT
+  __disable_irq();
+  batt_filtered = analog_read(R2C2_TEMP_SENSOR_ADC_CHANNEL);
+  batt_filtered += analog_read(R2C2_TEMP_SENSOR_ADC_CHANNEL);
+  batt_filtered += analog_read(R2C2_TEMP_SENSOR_ADC_CHANNEL);
+  batt_filtered /= 3;
+  __enable_irq();
+#endif
+#endif
+}
+int main()
+{
+	eParseResult parse_result;
+
+	// DeInit NVIC and SCBNVIC
+	NVIC_DeInit();
+	NVIC_SCBDeInit();
+
+	/* Configure the NVIC Preemption Priority Bits:
+	 * two (2) bits of preemption priority, six (6) bits of sub-priority.
+	 * Since the Number of Bits used for Priority Levels is five (5), so the
+	 * actual bit number of sub-priority is three (3)
+	 */
+	NVIC_SetPriorityGrouping(0x05);
+
+	NVIC_SetVTOR(0x00000000);
+
+	SysTickTimer_Init(); // Initialize the timer for millis()
+
+	//delay_ms(1000);
+
+	//Config IOs
+	io_init();
+
+	//Config ADCs
+	adc_init();
+
+	//Initialize Analog Variables
+	init_analogVars();
+
+	//Bootloader Timer
+	AddSlowTimer (&bootloaderTimer);
+	StartSlowTimer (&bootloaderTimer, 50, bootloaderTimerCallback);
+	bootloaderTimer.AutoReload = 1;
+
 	char write_state;
 	char *pmem630;
 
@@ -174,7 +304,7 @@ int main()
 		while (!serial_line_buf.seen_lf
 				&& ((serial_rxchars() != 0)
 						|| (transfer_mode==1))
-				&& (serial_line_buf.len < MAX_LINE)){
+						&& (serial_line_buf.len < MAX_LINE)){
 
 			/*if it is transfer but it has no characteres, it should just continue*/
 			if(serial_rxchars() != 0){
@@ -187,7 +317,7 @@ int main()
 				/*if it is the last character and is not in transfer mode*/
 				if (((c == 10)
 						|| (c == 13))
-					&& (transfer_mode == 0)){
+						&& (transfer_mode == 0)){
 
 					if (serial_line_buf.len > 1){
 						serial_line_buf.seen_lf = 1;
@@ -207,7 +337,7 @@ int main()
 		}
 
 		if(!transfer_mode
-			&& (serial_line_buf.len != 0)){
+				&& (serial_line_buf.len != 0)){
 
 			parse_result = gcode_parse_line (&serial_line_buf);
 			serial_line_buf.len = 0;
@@ -215,7 +345,7 @@ int main()
 		}/*no need for else*/
 
 		if(transfer_mode
-			&& (serial_line_buf.len != 0)){
+				&& (serial_line_buf.len != 0)){
 
 			/*used in the debug loop back*/
 			serial_writeblock(serial_line_buf.data,serial_line_buf.len);
@@ -277,22 +407,22 @@ int main()
 
 					prepare_sector(15, 15, SystemCoreClock);
 					write_data( (unsigned)(SystemCoreClock/1000),
-								(unsigned)(SECTOR_15_START),
-								(unsigned)sector1,
-								(unsigned)FLASH_BUF_SIZE);
+							(unsigned)(SECTOR_15_START),
+							(unsigned)sector1,
+							(unsigned)FLASH_BUF_SIZE);
 
 
 					compare_data((unsigned)(SystemCoreClock/1000),
-								(unsigned)(SECTOR_15_START),
-								(unsigned)sector1,
-								(unsigned)FLASH_BUF_SIZE);
+							(unsigned)(SECTOR_15_START),
+							(unsigned)sector1,
+							(unsigned)FLASH_BUF_SIZE);
 
 					bytes_to_transfer = 0;
 					number_of_bytes = 0;
 					transfer_mode = 0;
 					pmem = (USER_FLASH_START);
 
-				 }/*no need for else*/
+				}/*no need for else*/
 			}/*no need for else*/
 		}/*no need for else*/
 	}

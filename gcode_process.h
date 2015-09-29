@@ -35,7 +35,21 @@
 #include "gcode_parse.h"
 #include "sbl_iap.h"
 #include "sbl_config.h"
+#include "pinout.h"
 
+#ifdef EXP_BOARD
+	extern double current_temp_r2c2;
+	extern uint32_t adc_filtered_r2c2;
+	extern int32_t adc_r2c2_raw;
+#ifdef USE_BATT
+	extern int32_t ps_ext_state;
+	extern int32_t battADC_raw;
+	extern int32_t batt_filtered;
+	extern bool charging;
+#endif
+#endif
+
+extern bool debugMode;
 // when we have a whole line, feed it to this
 eParseResult process_gcode_command(void);
 

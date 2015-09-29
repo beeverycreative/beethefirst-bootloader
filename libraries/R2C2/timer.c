@@ -18,7 +18,7 @@
 #include "lpc17xx_gpio.h"
 #include "lpc_types.h"
 #include "ios.h"
-#include "sdcard.h"
+//#include "sdcard.h"
 #include "timer.h"
 
 
@@ -204,7 +204,7 @@ void SysTick_Handler(void)
   counter++;
   if (counter > 99)
   {
-    MMC_disk_timerproc();
+    //MMC_disk_timerproc();
     counter = 0;
   }
   /***********************************************************************/

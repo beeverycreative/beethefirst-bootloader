@@ -84,7 +84,7 @@
 # - 13. Jun. 2010  - Trigger build when non-source files have changed
 #                    (see BUILDONCHANGE). (mth)
 
-B_Version = 4.2.0
+B_Version = 4.3.0
 
 # Toolchain prefix (arm-elf- -> arm-elf-gcc.exe)
 TCHAIN_PREFIX = arm-none-eabi-
@@ -155,15 +155,20 @@ SRC =	$(APPLIBDIR)/LPCUSB/src/usbcontrol.c \
 	$(APPLIBDIR)/NXP/Drivers/source/lpc17xx_clkpwr.c \
 	$(APPLIBDIR)/NXP/Drivers/source/lpc17xx_ssp.c \
 	$(APPLIBDIR)/NXP/Drivers/source/lpc17xx_wdt.c \
+	$(APPLIBDIR)/NXP/Drivers/source/lpc17xx_adc.c \
 	$(APPLIBDIR)/R2C2/usb.c \
+	$(APPLIBDIR)/R2C2/timer.c \
+	$(APPLIBDIR)/R2C2/adc.c \
 	$(APPLIBDIR)/R2C2/serial_fifo.c \
 	$(APPLIBDIR)/R2C2/serial.c \
 	$(APPLIBDIR)/R2C2/sermsg.c \
+	$(APPLIBDIR)/R2C2/sersendf.c \
 	main.c	\
 	sbl_iap.c \
 	ios.c	\
 	gcode_process.c \
 	gcode_parse.c \
+	ExpBoard.c \
 	reset.c 
 	
 # List C source files here which must be compiled in ARM-Mode (no -mthumb).
@@ -495,7 +500,7 @@ DEPFILES   = $(addprefix $(OUTDIR)/dep/, $(addsuffix .o.d, $(ALLSRCBASE)))
 
 # Default target.
 #all: begin createdirs gccversion build sizeafter end
-all: btf btfplus btfme btfschool
+all:
 
 # BTF
 btf: CFLAGS += -DBTF -DB_V='"$(B_Version)"'
@@ -504,6 +509,10 @@ btf: begin createdirs gccversion build sizeafter copyBtf end
 # BTF_PLUS
 btfplus: CFLAGS += -DBTF_PLUS -DB_V='"$(B_Version)"'
 btfplus: begin createdirs gccversion build sizeafter copyBtfplus end
+
+# BTF_PLUS_A
+btfplus_a: CFLAGS += -DBTF_PLUS_A -DB_V='"$(B_Version)"'
+btfplus_a: begin createdirs gccversion build sizeafter copyBtfplus_a end
 
 # BTF_ME
 btfme: CFLAGS += -DBTF_ME -DB_V='"$(B_Version)"'
@@ -559,6 +568,9 @@ copyBtf:
 copyBtfplus:
 	cp -f $(OUTDIR)/$(TARGET).bin releases/BEETHEFIRST_PLUS-Bootloader-$(B_Version).bin
 
+copyBtfplus_a:
+	cp -f $(OUTDIR)/$(TARGET).bin releases/BEETHEFIRST_PLUS_A-Bootloader-$(B_Version).bin
+	
 copyBtfme:
 	cp -f $(OUTDIR)/$(TARGET).bin releases/BEE_ME-Bootloader-$(B_Version).bin
 
@@ -699,11 +711,11 @@ clean_list :
 	@$(REMOVE) $(SRCARM:.c=.s)
 	@$(REMOVE) $(CPPSRC:.cpp=.s)
 	@$(REMOVE) $(CPPSRCARM:.cpp=.s)
-	@rmdir $(OUTDIR)/dep $(OUTDIR)
+	#@$(REMOVE) $(OUTDIR)/dep $(OUTDIR)
 
 # Include the dependency files.
-##-include $(wildcard dep/*)
--include $(wildcard *.d)
+-include $(wildcard dep/*)
+#-include $(wildcard *.d)
 
 # Listing of phony targets.
 .PHONY : all begin end sizebefore sizeafter gccversion build elf hex bin lss sym clean clean_list program createdirs
