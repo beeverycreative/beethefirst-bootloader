@@ -222,9 +222,9 @@
   #define FAN_EXT_V1_PIN                  1       /* P2.1 */
   #define FAN_EXT_PWM_CHANNEL             2       /* PWM2 */
 
-  #define LOGO_ON_PORT                    2       /* P2.0 */
-  #define LOGO_ON_PIN                     0       /* P2.0 */
-  #define LOGO_PWM_CHANNEL                1       /* PWM1 */
+  //#define LOGO_ON_PORT                    2       /* P2.0 */
+  //#define LOGO_ON_PIN                     0       /* P2.0 */
+  //#define LOGO_PWM_CHANNEL                1       /* PWM1 */
 
   #define r2c2_fan_on() digital_write(R2C2_FAN_PORT, R2C2_FAN_PIN, HIGH);
   #define r2c2_fan_off() digital_write(R2C2_FAN_PORT, R2C2_FAN_PIN, LOW);

@@ -174,10 +174,7 @@ void io_init(void)
 	extruder_block_fan_off();
 
 	pin_mode(BW_ON_PORT,BW_ON_PIN, OUTPUT);
-	pin_mode(BW_V1_PORT,BW_V1_PIN, OUTPUT);
-	blower_off();
-
-	pin_mode(BW_ON_PORT,BW_ON_PIN, OUTPUT);
+	//pin_mode(BW_V1_PORT,BW_V1_PIN, OUTPUT);
 	blower_off();
 
 	pin_mode(R2C2_FAN_PORT,R2C2_FAN_PIN, OUTPUT);
