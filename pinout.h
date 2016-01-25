@@ -46,6 +46,10 @@
   #define EXP_BOARD       //Expansion Board P02V04A
   #define USE_BATT
 #endif
+#ifdef BTF_SCHOOL_A
+  #define EXP_BOARD       //Expansion Board P02V04A
+  #define USE_BATT
+#endif
 
 
 /*

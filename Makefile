@@ -84,7 +84,7 @@
 # - 13. Jun. 2010  - Trigger build when non-source files have changed
 #                    (see BUILDONCHANGE). (mth)
 
-B_Version = 4.3.0
+B_Version = 4.3.1
 
 # Toolchain prefix (arm-elf- -> arm-elf-gcc.exe)
 TCHAIN_PREFIX = arm-none-eabi-
@@ -521,7 +521,10 @@ btfme: begin createdirs gccversion build sizeafter copyBtfme end
 # BTF_IS
 btfschool: CFLAGS += -DBTF_SCHOOL -DB_V='"$(B_Version)"'
 btfschool: begin createdirs gccversion build sizeafter copyBtfschool end
-#
+
+# BTF_IS_A
+btfschool_a: CFLAGS += -DBTF_SCHOOL_A -DB_V='"$(B_Version)"'
+btfschool_a: begin createdirs gccversion build sizeafter copyBtfschool_a end
 
 # Target for the build-sequence.
 build: elf lss sym hex bin
@@ -577,6 +580,9 @@ copyBtfme:
 copyBtfschool:
 	cp -f $(OUTDIR)/$(TARGET).bin releases/BEE_IN_SCHOOL-Bootloader-$(B_Version).bin
 
+copyBtfschool_a:
+	cp -f $(OUTDIR)/$(TARGET).bin releases/BEE_IN_SCHOOL_A-Bootloader-$(B_Version).bin
+	
 # Display compiler version information.
 gccversion :
 	@$(CC) --version

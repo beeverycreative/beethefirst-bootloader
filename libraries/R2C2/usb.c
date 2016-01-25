@@ -54,6 +54,9 @@
 #ifdef BTF_SCHOOL
   #define SERIAL_ADD 116
 #endif
+#ifdef BTF_SCHOOL_A
+  #define SERIAL_ADD 120
+#endif
 
 #ifndef SERIAL_ADD
   #define SERIAL_ADD 112
@@ -101,6 +104,9 @@ static U8 abDescriptors[] = {
 #endif
 #ifdef BTF_PLUS_A
   LE_WORD(0x0005),               // idProduct
+#endif
+#ifdef BTF_SCHOOL_A
+  LE_WORD(0x0006),               // idProduct
 #endif
   LE_WORD(0x0100),            // bcdDevice
   0x01,                       // iManufacturer
@@ -175,6 +181,11 @@ static U8 abDescriptors[] = {
   38,
   DESC_STRING,
   'B', 0, 'E', 0, 'E', 0, 'T', 0, 'H', 0, 'E', 0, 'F', 0, 'I', 0, 'R', 0, 'S', 0, 'T', 0, ' ', 0, 'P', 0, 'L', 0, 'U', 0, 'S', 0,' ',0,'A',0,
+#endif
+#ifdef BTF_SCHOOL_A
+  32,
+  DESC_STRING,
+  'B', 0, 'E', 0, 'E', 0, ' ', 0, 'I', 0, 'N', 0, ' ', 0, 'S', 0, 'C', 0, 'H', 0, 'O', 0, 'O', 0, 'L', 0,' ',0,'A',0,
 #endif
   24,
   DESC_STRING,
