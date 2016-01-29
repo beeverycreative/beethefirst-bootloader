@@ -84,7 +84,7 @@
 # - 13. Jun. 2010  - Trigger build when non-source files have changed
 #                    (see BUILDONCHANGE). (mth)
 
-B_Version = 4.3.1
+B_Version = 4.3.2
 
 # Toolchain prefix (arm-elf- -> arm-elf-gcc.exe)
 TCHAIN_PREFIX = arm-none-eabi-
@@ -575,13 +575,13 @@ copyBtfplus_a:
 	cp -f $(OUTDIR)/$(TARGET).bin releases/BEETHEFIRST_PLUS_A-Bootloader-$(B_Version).bin
 	
 copyBtfme:
-	cp -f $(OUTDIR)/$(TARGET).bin releases/BEE_ME-Bootloader-$(B_Version).bin
+	cp -f $(OUTDIR)/$(TARGET).bin releases/BEEME-Bootloader-$(B_Version).bin
 
 copyBtfschool:
-	cp -f $(OUTDIR)/$(TARGET).bin releases/BEE_IN_SCHOOL-Bootloader-$(B_Version).bin
+	cp -f $(OUTDIR)/$(TARGET).bin releases/BEEINSCHOOL-Bootloader-$(B_Version).bin
 
 copyBtfschool_a:
-	cp -f $(OUTDIR)/$(TARGET).bin releases/BEE_IN_SCHOOL_A-Bootloader-$(B_Version).bin
+	cp -f $(OUTDIR)/$(TARGET).bin releases/BEEINSCHOOL_A-Bootloader-$(B_Version).bin
 	
 # Display compiler version information.
 gccversion :
