@@ -526,6 +526,11 @@ btfschool: begin createdirs gccversion build sizeafter copyBtfschool end
 btfschool_a: CFLAGS += -DBTF_SCHOOL_A -DB_V='"$(B_Version)"'
 btfschool_a: begin createdirs gccversion build sizeafter copyBtfschool_a end
 
+
+#SMOOTHIEBOARD Bootloader
+smoothie: CFLAGS += -DBTF_SMOOTHIE -DB_V='"$(B_Version)"'
+smoothie: begin createdirs gccversion build sizeafter copyBtfsmoothie end
+
 # Target for the build-sequence.
 build: elf lss sym hex bin
 
@@ -582,7 +587,10 @@ copyBtfschool:
 
 copyBtfschool_a:
 	cp -f $(OUTDIR)/$(TARGET).bin releases/BEE_IN_SCHOOL_A-Bootloader-$(B_Version).bin
-	
+
+copyBtfsmoothie:
+	cp -f $(OUTDIR)/$(TARGET).bin releases/BEE_SMOOTHIE-$(B_Version).bin
+		
 # Display compiler version information.
 gccversion :
 	@$(CC) --version
