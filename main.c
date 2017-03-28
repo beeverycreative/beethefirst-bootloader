@@ -140,12 +140,8 @@ void io_init(void)
 	/* Extruder fan pin */
 	pin_mode(EXTRUDER_0_FAN_PORT, EXTRUDER_0_FAN_PIN, OUTPUT);
 	extruder_fan_off();
-	/* Buzzer fan pin */
-	pin_mode(BUZZER_PORT, BUZZER_PIN, OUTPUT);
-	buzzer_off();
-	/* Disable reset for all stepper motors */
-	pin_mode(STEPPERS_RESET_PORT, STEPPERS_RESET_PIN, OUTPUT);
-	digital_write(STEPPERS_RESET_PORT, STEPPERS_RESET_PIN, 1);
+
+
 	/* Disable all motors BUT enable step pin, so each LED will be ON */
 	pin_mode(X_STEP_PORT, X_STEP_PIN, OUTPUT);
 	pin_mode(X_ENABLE_PORT, X_ENABLE_PIN, OUTPUT);
