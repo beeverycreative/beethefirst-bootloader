@@ -190,6 +190,9 @@ void io_init(void)
 	pin_mode(BATT_uC_ON_PORT, BATT_uC_ON_PIN, OUTPUT);
 	BATT_uC_disable();
 #endif
+
+	pin_mode(SPOOL_LIGHT_PORT,SPOOL_LIGHT_PIN, OUTPUT);
+	digital_write(SPOOL_LIGHT_PORT, SPOOL_LIGHT_PIN, 1); /*Turn Spool Light ON*/
 }
 
 void adc_init(void)
