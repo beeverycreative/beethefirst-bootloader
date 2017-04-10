@@ -84,7 +84,7 @@
 # - 13. Jun. 2010  - Trigger build when non-source files have changed
 #                    (see BUILDONCHANGE). (mth)
 
-B_Version = 4.3.1
+B_Version = 4.3.3
 
 # Toolchain prefix (arm-elf- -> arm-elf-gcc.exe)
 TCHAIN_PREFIX = arm-none-eabi-
