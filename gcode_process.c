@@ -144,7 +144,7 @@ eParseResult process_gcode_command(void) {
 				serial_writestr("ok ");
 				serial_writestr(" N:");
 				serwrite_uint32(next_target.N);
-				serial_writestr(" 3.4.0\r\n");
+				serial_writestr(" 3.4.1\r\n");
 			}
 			break;
 
