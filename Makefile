@@ -572,24 +572,31 @@ sizeafter:
 
 copyBtf:
 	cp -f $(OUTDIR)/$(TARGET).bin releases/BEETHEFIRST-Bootloader-$(B_Version).bin
+	cp -f $(OUTDIR)/$(TARGET).hex releases/BEETHEFIRST-Bootloader-$(B_Version).hex
 
 copyBtfplus:
 	cp -f $(OUTDIR)/$(TARGET).bin releases/BEETHEFIRST_PLUS-Bootloader-$(B_Version).bin
+	cp -f $(OUTDIR)/$(TARGET).hex releases/BEETHEFIRST_PLUS-Bootloader-$(B_Version).hex
 
 copyBtfplus_a:
 	cp -f $(OUTDIR)/$(TARGET).bin releases/BEETHEFIRST_PLUS_A-Bootloader-$(B_Version).bin
+	cp -f $(OUTDIR)/$(TARGET).hex releases/BEETHEFIRST_PLUS_A-Bootloader-$(B_Version).hex
 	
 copyBtfme:
 	cp -f $(OUTDIR)/$(TARGET).bin releases/BEE_ME-Bootloader-$(B_Version).bin
+	cp -f $(OUTDIR)/$(TARGET).hex releases/BEE_ME-Bootloader-$(B_Version).hex
 
 copyBtfschool:
 	cp -f $(OUTDIR)/$(TARGET).bin releases/BEE_IN_SCHOOL-Bootloader-$(B_Version).bin
+	cp -f $(OUTDIR)/$(TARGET).hex releases/BEE_IN_SCHOOL-Bootloader-$(B_Version).hex
 
 copyBtfschool_a:
 	cp -f $(OUTDIR)/$(TARGET).bin releases/BEE_IN_SCHOOL_A-Bootloader-$(B_Version).bin
+	cp -f $(OUTDIR)/$(TARGET).hex releases/BEE_IN_SCHOOL_A-Bootloader-$(B_Version).hex
 
 copyBtfsmoothie:
 	cp -f $(OUTDIR)/$(TARGET).bin releases/BEE_SMOOTHIE-$(B_Version).bin
+	cp -f $(OUTDIR)/$(TARGET).hex releases/BEE_SMOOTHIE-$(B_Version).hex
 		
 # Display compiler version information.
 gccversion :
