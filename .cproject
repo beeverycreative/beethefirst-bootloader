@@ -264,13 +264,10 @@
 		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-		<project id="beethefirst-bootloader.null.621487127" name="beethefirst-bootloader"/>
+		<project id="beethefirst-bootloader.null.1045422229" name="beethefirst-bootloader"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="refreshScope" versionNumber="2">
-		<configuration configurationName="MELT">
-			<resource resourceType="PROJECT" workspacePath="/beethefirst-bootloader"/>
-		</configuration>
 		<configuration configurationName="BEETHEFIRST+">
 			<resource resourceType="PROJECT" workspacePath="/beethefirst-bootloader"/>
 		</configuration>
@@ -279,26 +276,14 @@
 		</configuration>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1729268611;ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1729268611.1567121575;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.309417893;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1444715568">
+		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1576130324;ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1576130324.34848396;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.535123092;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.705392436">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1729268611.1048031271;ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1729268611.1048031271.;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.37850489;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1724778860">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1729268611;ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1729268611.1567121575;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.70686083;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.113188602">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1729268611.1048031271;ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1729268611.1048031271.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.11878274;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.42885493">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="0.669938598">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="0.793921522">
+		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1576130324;ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1576130324.34848396;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.1348326379;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1759883150">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 	</storageModule>
-	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 </cproject>
